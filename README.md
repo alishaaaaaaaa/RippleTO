@@ -1,1 +1,132 @@
-# RippleTO
+# Ripple TO
+
+**See how a city decision ripples through Toronto, one household at a time.**
+
+Ripple is a civic scenario simulator. Pick a real Toronto decision, press the big red button to enact it, and watch 12 AI residents live through it on a map, month by month. You can see who comes out ahead, who pays, and who gets missed, then **call any resident** to ask why, and generate a **neutral ward briefing** for residents, journalists or councillors.
+
+Built for Hack the Valley. Architecture inspired by [Emergent](https://github.com/myr124/emergent) (persona agents, timeline, map, interviews, after-action report), rebuilt for Toronto civic questions.
+
+| Scenario | Question | Tracks |
+|---|---|---|
+| 🚌 **RapidTO: Jane Street bus lanes** | Who actually gets time back, and who pays for it? | Climate · School of Cities · AI for Social Impact |
+| 🏠 **Rent pressure near new transit** | What does "affordable" mean once you add the commute, and which renter protections keep people housed for the least money? | Sustainable FinTech · School of Cities · AI for Social Impact |
+| 🌡️ **Five-day extreme heat warning** | Can the people who need cool spaces most actually reach one, especially overnight? | Healthcare · Climate · School of Cities · AI for Social Impact |
+| ✦ **Your own idea** | Type any policy in plain English; AI turns it into a runnable scenario. | — |
+
+---
+
+## Quick start
+
+```bash
+npm install
+cp .env.example .env.local      # optional: add GEMINI_API_KEY for live AI agents
+npm run dev                      # http://localhost:3000
+```
+
+- **No API key? It still works.** Every AI feature has a template fallback, so the demo can't break if the Wi-Fi or the API does. The header shows `● AI agents live` or `○ AI offline (templates)`.
+- Get a free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey). The default model is `gemini-2.5-flash`; change it with `GEMINI_MODEL`.
+- **Deploy:** push to GitHub → import in [Vercel](https://vercel.com/new) → add `GEMINI_API_KEY` as an environment variable.
+
+## Controls (keyboard = hardware panel)
+
+| Key | Panel control | Action |
+|---|---|---|
+| → / ← | Turn knob | Next / previous month |
+| Space | Press knob | Play / pause |
+| A / D | Safety cover toggle up / down | Arm / disarm |
+| E or Enter | Big red button | Enact the policy (must be armed) |
+| B | — | Compare: status quo ↔ with policy |
+| I | — | Call the selected resident |
+| 1 / 2 / 3 | — | Switch scenario |
+
+The optional **Raspberry Pi Pico control panel** acts as a USB keyboard and sends exactly these keys. Unplug it and nothing breaks. See [`hardware/README.md`](hardware/README.md).
+
+---
+
+## How it works
+
+```
+                ┌───────────────────────────────┐
+ Scenario file  │  lib/scenarios/*.ts           │  events, overlays, params, metrics, sources
+                └──────────────┬────────────────┘
+                               ▼
+                ┌───────────────────────────────┐
+ Rules engine   │  lib/engine/model.ts          │  status quo run + policy run, every number
+                │  (pure TS, runs in browser)   │  with plain-language "drivers" (the why)
+                └──────────────┬────────────────┘
+                               ▼
+                ┌───────────────────────────────┐
+ AI layer       │  /api/agent      ×12 parallel │  each resident's inner voice per month
+ (Gemini, with  │  /api/interview               │  grounded phone call with a resident
+  template      │  /api/briefing                │  neutral ward briefing (markdown)
+  fallbacks)    │  /api/scenario                │  plain English → scenario params
+                └──────────────┬────────────────┘
+                               ▼
+                ┌───────────────────────────────┐
+ UI             │  Zustand store + Leaflet map  │  timeline, metrics, residents, console
+                └───────────────────────────────┘
+```
+
+**Design principle: rules do the math, AI does the language.** Every number on screen (minutes saved, % of income, heat risk) comes from a transparent rules engine and can be explained. Gemini only writes residents' voices and briefings *from* those results, and is told never to invent figures. This is the answer to "is the AI making things up?", and it's what the "responsible interpretation" judging criterion rewards.
+
+### The three models
+
+- **Transit.** Each household's trip time changes by the share of their trip on Jane Street, using the City's published segment estimates (~8–9 min faster for buses, ~6–7 min slower for cars at peak). Drivers' chance of switching to the bus comes from a logit model on time-plus-money cost, with value of time scaled to income. Removed stops add walking time. Doing nothing isn't neutral: without lanes, buses slowly get slower.
+- **Housing.** Renters renew yearly. In redevelopment-pressure areas, rents jump at renewal; elsewhere they rise near the guideline. Housing **plus transport** cost is compared with income. Sustained spending over 65% forces a move: younger singles double up, others move further out and commute longer. The policy combines building protection (non-profit acquisition), enforcement and a targeted monthly benefit, and the engine reports **cost per household kept housed**.
+- **Heat.** Risk builds up across hot periods and depends on AC, age, living alone, chronic illness and floor height. Indoor heat lingers overnight. Each household can reach the nearest *open* cool space only within its walking range, car, or (under the policy) free transit or an outreach ride. Isolated seniors don't go unless someone contacts them.
+
+### Mapping to Emergent's architecture
+
+| Emergent | Ripple TO |
+|---|---|
+| `lib/types/ttx.ts` | `lib/types.ts` |
+| `lib/stores/ttxStoreV2.ts` (Zustand) | `lib/store.ts` |
+| ADK parallel persona agents | `/api/agent`, called 12× in parallel with `Promise.all` |
+| Injects / EOC actions | `events` (per arm) / the enacted policy |
+| `PeriodMapView.tsx` (React Leaflet) | `components/SimMap.tsx` |
+| `PhoneInterviewModal.tsx` (ElevenLabs) | `components/InterviewDialog.tsx` (free browser speech) |
+| Final report / AI summary | `/briefing` page + `/api/briefing` |
+| `adkTransformer.ts` | Not needed: the engine outputs the typed model directly |
+
+### Project layout
+
+```
+app/
+  page.tsx                 landing page + custom scenario
+  sim/page.tsx             main simulator
+  briefing/page.tsx        ward briefing (print to PDF)
+  api/agent|interview|briefing|scenario|health/route.ts
+components/                SimMap, PersonaPanel, MetricsPanel, ControlConsole, InterviewDialog, …
+lib/
+  types.ts                 shared data model
+  scenarios/               one file per scenario (+ index.ts registry)
+  data/                    neighbourhoods.ts, personas.ts  ← replace with real data (docs/DATA.md)
+  engine/model.ts          the rules engine
+  engine/templates.ts      offline fallbacks
+  ai/                      Gemini wrapper + grounded prompt context
+  store.ts, useControls.ts
+hardware/                  Pico firmware (code.py) + wiring guide
+docs/                      DATA.md, PITCH.md, IMPROVEMENTS.md
+```
+
+### Adding a scenario
+
+1. Copy one of `lib/scenarios/*.ts`, change the text, events, overlays and params.
+2. Add it to `SCENARIOS` in `lib/scenarios/index.ts`.
+
+That's it: no engine or UI changes, as long as it's a `transit`, `housing` or `heat` kind. A new *kind* means adding a `run<Kind>()` function in `model.ts`.
+
+---
+
+## Responsible design
+
+- **Composite residents, not real people**, with fictional first names. No race or ethnicity fields: outcomes are driven by circumstances (income, tenure, car access, age, health, building type).
+- **Directional, not a forecast.** Every scenario lists its assumptions, limitations and sources (the **Data & limits** button).
+- **Non-partisan.** No candidate predictions or endorsements. Briefings end with neutral questions residents can ask *any* candidate.
+- **Illustrative data is labelled as such** until replaced with Census figures (see [docs/DATA.md](docs/DATA.md)).
+
+## Before you present
+
+Read **[docs/PITCH.md](docs/PITCH.md)** (demo script, one-liners per prize track, judge Q&A) and **[docs/IMPROVEMENTS.md](docs/IMPROVEMENTS.md)** (highest-impact upgrades, in priority order).
+
+Map tiles © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors © [CARTO](https://carto.com/attributions).
