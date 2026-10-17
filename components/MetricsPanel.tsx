@@ -42,8 +42,8 @@ function Sparkline({ base, policy, upTo, showPolicy }: { base: number[]; policy:
       .join(" ");
   return (
     <svg width={W} height={H} className="overflow-visible">
-      <path d={path(base)} fill="none" stroke="#8b97ab" strokeWidth={1.5} strokeDasharray={showPolicy ? "3 3" : undefined} />
-      {showPolicy && <path d={path(policy)} fill="none" stroke="#f5a524" strokeWidth={2} />}
+      <path d={path(base)} fill="none" stroke="#9aa8bd" strokeWidth={1.5} strokeDasharray={showPolicy ? "3 3" : undefined} />
+      {showPolicy && <path d={path(policy)} fill="none" style={{ stroke: "var(--color-accent-deep)" }} strokeWidth={2} />}
     </svg>
   );
 }
@@ -120,7 +120,7 @@ export function MetricsPanel() {
                 <div className="flex items-center gap-2 text-xs">
                   <span className="inline-block h-2 w-2 rounded-full" style={{ background: SEVERITY_COLOR[e.severity] }} />
                   <span className="font-mono text-muted">{scenario.periodLabels[e.period - 1]}</span>
-                  {i === 0 && e.period === period && <span className="rounded bg-accent/20 px-1.5 text-[10px] font-bold text-accent">NEW</span>}
+                  {i === 0 && e.period === period && <span className="rounded bg-accent/20 px-1.5 text-[10px] font-bold text-accent-deep">NEW</span>}
                 </div>
                 <div className="mt-1 text-sm font-semibold">{e.title}</div>
                 <div className="text-xs leading-snug text-muted">{e.description}</div>

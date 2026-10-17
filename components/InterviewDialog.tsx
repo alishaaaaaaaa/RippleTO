@@ -185,7 +185,7 @@ export function InterviewDialog() {
             placeholder={`Ask ${persona.name} something…`}
             className="flex-1 rounded-lg border border-line bg-ink px-3 py-2 text-sm outline-none focus:border-info"
           />
-          <button type="submit" disabled={loading} className="rounded-lg bg-info px-4 text-sm font-semibold text-ink disabled:opacity-50">
+          <button type="submit" disabled={loading} className="rounded-lg bg-info px-4 text-sm font-semibold text-navy disabled:opacity-50">
             Ask
           </button>
           <button

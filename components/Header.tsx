@@ -7,6 +7,7 @@ import { useRipple } from "@/lib/store";
 import { SCENARIOS, TRACK_LABELS } from "@/lib/scenarios";
 import { cx } from "@/lib/ui";
 import { SourcesDialog } from "./SourcesDialog";
+import { PanelButton } from "./PanelButton";
 
 export function Header() {
   const router = useRouter();
@@ -28,9 +29,9 @@ export function Header() {
   return (
     <header className="flex h-14 shrink-0 items-center gap-4 border-b border-line bg-panel px-4">
       <Link href="/" className="flex items-center gap-2">
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent font-black text-ink">R</span>
+        <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent font-black text-navy">R</span>
         <span className="text-lg font-extrabold tracking-tight">
-          Ripple<span className="text-accent">TO</span>
+          Ripple<span className="text-accent-deep">TO</span>
         </span>
       </Link>
 
@@ -61,25 +62,26 @@ export function Header() {
       </div>
 
       <div className="ml-auto flex items-center gap-2 text-xs">
-        <span className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-amber-300" title="Neighbourhood data from the 2021 Census (City of Toronto Neighbourhood Profiles). Library sites from Toronto Public Library open data.">
+        <span className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-amber-700" title="Neighbourhood data from the 2021 Census (City of Toronto Neighbourhood Profiles). Library sites from Toronto Public Library open data.">
           2021 Census data
         </span>
         <span
           className={cx(
             "rounded-md border px-2 py-1",
-            aiEnabled ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" : "border-line text-muted",
+            aiEnabled ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700" : "border-line text-muted",
           )}
           title={aiEnabled ? "Gemini is generating resident voices and briefings" : "No GEMINI_API_KEY — using built-in templates"}
         >
           {aiEnabled === null ? "AI …" : aiEnabled ? "● AI agents live" : "○ AI offline (templates)"}
         </span>
+        <PanelButton />
         <button onClick={toggleSound} className="rounded-md border border-line px-2 py-1 hover:bg-panel-2" title="Toggle alert sound">
           {soundOn ? "🔊" : "🔇"}
         </button>
         <button onClick={() => setSourcesOpen(true)} className="rounded-md border border-line px-2 py-1 hover:bg-panel-2">
           Data & limits
         </button>
-        <Link href={`/briefing?s=${scenario.id}`} className="rounded-md bg-accent px-3 py-1.5 font-semibold text-ink hover:brightness-110">
+        <Link href={`/briefing?s=${scenario.id}`} className="rounded-md bg-accent px-3 py-1.5 font-semibold text-navy hover:brightness-110">
           Ward briefing →
         </Link>
       </div>

@@ -7,6 +7,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { SCENARIO_BY_ID } from "@/lib/scenarios";
 import { useRipple } from "@/lib/store";
+import { applyThemeToDocument, themeFor } from "@/lib/themes";
 import { PERSONAS } from "@/lib/data/personas";
 import { NEIGHBOURHOOD_BY_ID } from "@/lib/data/neighbourhoods";
 
@@ -20,6 +21,7 @@ function BriefingInner() {
   const custom = useRipple((s) => s.customScenarios);
   const scenario = useMemo(() => SCENARIO_BY_ID[id] ?? custom.find((c) => c.id === id) ?? Object.values(SCENARIO_BY_ID)[0], [id, custom]);
 
+  useEffect(() => applyThemeToDocument(themeFor(scenario.kind)), [scenario.kind]);
   const [ward, setWard] = useState<string>("all");
   const [audience, setAudience] = useState("residents");
   const [md, setMd] = useState<string>("");
@@ -71,7 +73,7 @@ function BriefingInner() {
             <option value="journalists">For journalists</option>
             <option value="councillors">For councillors</option>
           </select>
-          <button onClick={generate} disabled={loading} className="rounded-lg bg-accent px-4 py-1.5 font-semibold text-ink disabled:opacity-50">
+          <button onClick={generate} disabled={loading} className="rounded-lg bg-accent px-4 py-1.5 font-semibold text-navy disabled:opacity-50">
             {loading ? "Writing…" : "Generate"}
           </button>
           <button onClick={() => window.print()} className="rounded-lg border border-line px-3 py-1.5 hover:bg-panel-2">
@@ -95,7 +97,7 @@ function BriefingInner() {
       <article className="print-sheet mt-6 rounded-2xl border border-line bg-panel p-8">
         <div className="mb-4 flex items-center justify-between text-xs text-muted">
           <span>
-            Ripple<span className="text-accent">TO</span> ward briefing · {scenario.shortTitle}
+            Ripple<span className="text-accent-deep">TO</span> ward briefing · {scenario.shortTitle}
           </span>
           <span>{source === "gemini" ? "Written by AI from simulation results" : source === "template" ? "Template (AI offline)" : ""}</span>
         </div>

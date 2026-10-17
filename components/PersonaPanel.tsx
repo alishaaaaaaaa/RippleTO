@@ -53,12 +53,12 @@ function Card({ p, i }: { p: Persona; i: number }) {
       onClick={() => select(selected ? null : p.id)}
       className={cx(
         "cursor-pointer rounded-xl border p-3 transition-colors",
-        selected ? "border-accent bg-panel-2" : "border-line bg-panel hover:border-slate-600",
+        selected ? "border-accent bg-panel-2" : "border-line bg-panel hover:border-slate-300",
       )}
     >
       <div className="flex items-start gap-3">
         <div
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-black text-ink"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-black text-navy"
           style={{ background: stateColor(scenario, st) }}
         >
           {p.name[0]}
@@ -78,7 +78,7 @@ function Card({ p, i }: { p: Persona; i: number }) {
             <div className="thinking mt-1.5 text-xs italic text-muted">agent thinking…</div>
           )}
           {thought && (
-            <div className="mt-1.5 rounded-lg bg-ink/60 px-2 py-1.5 text-xs italic leading-snug text-slate-300">
+            <div className="mt-1.5 rounded-lg bg-ink/60 px-2 py-1.5 text-xs italic leading-snug text-slate-600">
               <span className="not-italic">{SENTIMENT_EMOJI[thought.sentiment]}</span> “{thought.thought}”
             </div>
           )}
@@ -90,8 +90,8 @@ function Card({ p, i }: { p: Persona; i: number }) {
           <p className="text-xs leading-relaxed text-muted">{p.bio}</p>
           <KeyNumbers st={st} />
           <div>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-accent">Why (from the model)</div>
-            <ul className="list-disc space-y-0.5 pl-4 text-xs text-slate-300">
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-accent-deep">Why (from the model)</div>
+            <ul className="list-disc space-y-0.5 pl-4 text-xs text-slate-600">
               {st.drivers.map((d) => (
                 <li key={d}>{d}</li>
               ))}

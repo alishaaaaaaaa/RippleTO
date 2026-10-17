@@ -104,7 +104,7 @@ export default function SimMap() {
       >
         <FlyToScenario scenario={scenario} />
         <TileLayer
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
           attribution='Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
           maxZoom={16}
         />
@@ -147,7 +147,7 @@ export default function SimMap() {
               zIndexOffset={-500}
               icon={L.divIcon({
                 className: "",
-                html: `<div class="site-pin" style="background:${open ? (site.policyOnly ? "#06b6d4" : "#38bdf8") : "#1e293b"};opacity:${open ? 1 : 0.55}">❄</div>`,
+                html: `<div class="site-pin" style="background:${open ? (site.policyOnly ? "#7fd8f2" : "#38BFE5") : "#cbd5e1"};opacity:${open ? 1 : 0.55}">❄</div>`,
                 iconSize: [22, 22],
                 iconAnchor: [11, 11],
               })}
@@ -183,7 +183,7 @@ export default function SimMap() {
                   [p.home.lat, p.home.lng],
                   [st.position.lat, st.position.lng],
                 ]}
-                pathOptions={{ color: "#ef3b56", weight: 2, opacity: 0.8, dashArray: "2 6" }}
+                pathOptions={{ color: "#ff5470", weight: 2, opacity: 0.8, dashArray: "2 6" }}
               />
             );
           }
@@ -216,16 +216,16 @@ export default function SimMap() {
         {scenario.kind === "heat" && (
           <div className="mt-1 flex gap-3">
             <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-[#38bdf8]" /> cool space open
+              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-[#38BFE5]" /> cool space open
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-[#1e293b] ring-1 ring-white/50" /> closed
+              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-[#cbd5e1] ring-1 ring-slate-400" /> closed
             </span>
           </div>
         )}
         {scenario.kind === "transit" && view === "policy" && scenario.overlays.some((o) => o.arm === "policy" && o.kind === "line") && (
           <div className="mt-1 flex items-center gap-1.5">
-            <span className="inline-block h-1 w-5 rounded bg-[#e11d48]" /> new red bus lanes
+            <span className="inline-block h-1 w-5 rounded bg-[#F6C945]" /> new bus lanes
           </div>
         )}
       </div>

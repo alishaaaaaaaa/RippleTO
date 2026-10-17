@@ -10,7 +10,7 @@ export function SourcesDialog({ open, onClose }: { open: boolean; onClose: () =>
     <Modal open={open} onClose={onClose} title="Data, assumptions & limits">
       <div className="space-y-5 text-sm">
         <section>
-          <h3 className="mb-1 font-semibold text-accent">How to read this</h3>
+          <h3 className="mb-1 font-semibold text-accent-deep">How to read this</h3>
           <p className="text-muted">
             Ripple simulates <b className="text-text">12 composite households</b> built from neighbourhood-level patterns. They are not real people
             and this is not a forecast. A rules-based engine computes every number; AI only writes residents&apos; voices and briefings from those
@@ -18,7 +18,7 @@ export function SourcesDialog({ open, onClose }: { open: boolean; onClose: () =>
           </p>
         </section>
         <section>
-          <h3 className="mb-1 font-semibold text-accent">Assumptions</h3>
+          <h3 className="mb-1 font-semibold text-accent-deep">Assumptions</h3>
           <ul className="list-disc space-y-1 pl-5 text-muted">
             {scenario.assumptions.map((a) => (
               <li key={a}>{a}</li>
@@ -26,7 +26,7 @@ export function SourcesDialog({ open, onClose }: { open: boolean; onClose: () =>
           </ul>
         </section>
         <section>
-          <h3 className="mb-1 font-semibold text-accent">Limitations</h3>
+          <h3 className="mb-1 font-semibold text-accent-deep">Limitations</h3>
           <ul className="list-disc space-y-1 pl-5 text-muted">
             {scenario.limitations.map((a) => (
               <li key={a}>{a}</li>
@@ -34,7 +34,7 @@ export function SourcesDialog({ open, onClose }: { open: boolean; onClose: () =>
           </ul>
         </section>
         <section>
-          <h3 className="mb-1 font-semibold text-accent">Sources</h3>
+          <h3 className="mb-1 font-semibold text-accent-deep">Sources</h3>
           <ul className="space-y-1">
             {scenario.sources.map((s) => (
               <li key={s.url}>

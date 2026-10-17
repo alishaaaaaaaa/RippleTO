@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SCENARIOS, TRACK_LABELS } from "@/lib/scenarios";
 import { PERSONAS } from "@/lib/data/personas";
@@ -10,6 +10,7 @@ import { simulate } from "@/lib/engine/model";
 import { formatDelta } from "@/lib/format";
 import { useRipple } from "@/lib/store";
 import type { Scenario } from "@/lib/types";
+import { applyThemeToDocument, themeFor } from "@/lib/themes";
 
 const KIND_ICON = { transit: "🚌", housing: "🏠", heat: "🌡️" } as const;
 
@@ -24,30 +25,43 @@ function ScenarioCard({ s, i }: { s: Scenario; i: number }) {
   }, [s]);
   const good = teaser.m.better === "up" ? teaser.delta > 0 : teaser.delta < 0;
 
+  const t = themeFor(s.kind);
+
   return (
     <Link
       href={`/sim?s=${s.id}`}
-      className="group flex flex-col rounded-2xl border border-line bg-panel p-5 transition hover:-translate-y-0.5 hover:border-accent"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-panel p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+      style={{ ["--card" as string]: t.accent }}
     >
-      <div className="flex items-center justify-between">
+      {/* Scenario atmosphere: a band of its signal colour with a soft glow */}
+      <div className="absolute inset-x-0 top-0 h-1.5" style={{ background: t.accent }} />
+      <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-40 blur-3xl" style={{ background: t.accent }} />
+      <div className="relative flex items-center justify-between">
         <span className="text-3xl">{KIND_ICON[s.kind]}</span>
         <span className="font-mono text-xs text-muted">press {i + 1}</span>
       </div>
-      <h3 className="mt-3 text-lg font-bold leading-tight">{s.title}</h3>
-      <p className="mt-1 text-sm text-muted">{s.tagline}</p>
-      <div className="mt-4 rounded-lg bg-ink/70 p-3">
+      <h3 className="relative mt-3 text-lg font-bold leading-tight">{s.title}</h3>
+      <p className="relative mt-1 text-sm text-muted">{s.tagline}</p>
+      <div className="relative mt-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: t.deep }}>
+        <span className="inline-block h-2 w-2 rounded-full" style={{ background: t.accent, boxShadow: `0 0 8px ${t.accent}` }} />
+        {t.name}
+      </div>
+      <p className="relative mt-1 text-xs italic text-muted">{t.mood}</p>
+      <div className="relative mt-4 rounded-lg p-3" style={{ background: `${t.accent}1f` }}>
         <div className="text-[11px] uppercase tracking-wider text-muted">{teaser.m.label}{s.kind === "heat" ? " (peak)" : ""}</div>
         <div className={`font-mono text-2xl font-bold ${good ? "text-good" : "text-bad"}`}>{formatDelta(teaser.delta, teaser.m.format)}</div>
         <div className="text-[11px] text-muted">with “{s.policy.name}” vs. status quo</div>
       </div>
-      <div className="mt-4 flex flex-wrap gap-1.5">
-        {s.tracks.map((t) => (
-          <span key={t} className="rounded-full border border-line px-2 py-0.5 text-[10px] text-muted">
-            {TRACK_LABELS[t]}
+      <div className="relative mt-4 flex flex-wrap gap-1.5">
+        {s.tracks.map((tr) => (
+          <span key={tr} className="rounded-full border border-line bg-panel px-2 py-0.5 text-[10px] text-muted">
+            {TRACK_LABELS[tr]}
           </span>
         ))}
       </div>
-      <div className="mt-4 text-sm font-semibold text-accent group-hover:underline">Run simulation →</div>
+      <div className="relative mt-4 text-sm font-semibold group-hover:underline" style={{ color: t.deep }}>
+        Run simulation →
+      </div>
     </Link>
   );
 }
@@ -99,7 +113,7 @@ function CustomScenario() {
           placeholder="e.g. Free TTC for seniors during heat warnings"
           className="flex-1 rounded-lg border border-line bg-ink px-3 py-2 text-sm outline-none focus:border-info"
         />
-        <button disabled={loading} className="rounded-lg bg-info px-4 text-sm font-semibold text-ink disabled:opacity-50">
+        <button disabled={loading} className="rounded-lg bg-info px-4 text-sm font-semibold text-navy disabled:opacity-50">
           {loading ? "Building…" : "Simulate"}
         </button>
       </form>
@@ -116,19 +130,20 @@ function CustomScenario() {
 }
 
 export default function Home() {
+  useEffect(() => applyThemeToDocument(themeFor("transit")), []);
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <nav className="flex items-center gap-2">
-        <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent text-lg font-black text-ink">R</span>
+        <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent text-lg font-black text-navy">R</span>
         <span className="text-xl font-extrabold tracking-tight">
-          Ripple<span className="text-accent">TO</span>
+          Ripple<span className="text-accent-deep">TO</span>
         </span>
         <span className="ml-3 hidden text-sm text-muted sm:inline">Civic scenario simulator for Toronto</span>
       </nav>
 
       <section className="mt-12 max-w-3xl">
         <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-          See how a city decision <span className="text-accent">ripples</span> through Toronto, one household at a time.
+          See how a city decision <span className="text-accent-deep">ripples</span> through Toronto, one household at a time.
         </h1>
         <p className="mt-4 text-lg text-muted">
           Before the 2026 municipal election, pick a real Toronto decision, enact it, and watch twelve AI residents live through it on a map. Then

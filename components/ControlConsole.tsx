@@ -27,7 +27,7 @@ export function ControlConsole() {
           </button>
           <button
             onClick={togglePlay}
-            className="w-20 rounded-md bg-text px-3 py-1 text-sm font-bold text-ink hover:brightness-90"
+            className="w-20 rounded-md bg-navy px-3 py-1 text-sm font-bold text-white hover:brightness-90"
             aria-label={playing ? "Pause" : "Play"}
           >
             {playing ? "❚❚ Pause" : "▶ Play"}
@@ -39,13 +39,13 @@ export function ControlConsole() {
           <div className="ml-auto inline-flex overflow-hidden rounded-lg border border-line text-xs font-semibold">
             <button
               onClick={() => setView("baseline")}
-              className={cx("px-3 py-1.5", view === "baseline" ? "bg-slate-200 text-ink" : "text-muted hover:bg-panel-2")}
+              className={cx("px-3 py-1.5", view === "baseline" ? "bg-slate-200 text-navy" : "text-muted hover:bg-panel-2")}
             >
               Status quo
             </button>
             <button
               onClick={() => setView("policy")}
-              className={cx("px-3 py-1.5", view === "policy" ? "bg-accent text-ink" : "text-muted hover:bg-panel-2", !enacted && "opacity-40")}
+              className={cx("px-3 py-1.5", view === "policy" ? "bg-accent text-navy" : "text-muted hover:bg-panel-2", !enacted && "opacity-40")}
             >
               With policy
             </button>
@@ -60,12 +60,12 @@ export function ControlConsole() {
             setPlaying(false);
             setPeriod(Number(e.target.value));
           }}
-          className="w-full accent-[#f5a524]"
+          className="w-full accent-[var(--color-accent-deep)]"
           aria-label="Timeline"
         />
         <div className="flex justify-between font-mono text-[10px] text-muted">
           {scenario.periodLabels.map((l, i) => (
-            <span key={l} className={cx(i + 1 === period && "font-bold text-accent")}>
+            <span key={l} className={cx(i + 1 === period && "font-bold text-accent-deep")}>
               {N > 10 ? l.replace("Month ", "M") : l.replace(" · ", " ").replace("Day ", "D")}
             </span>
           ))}
@@ -91,7 +91,7 @@ export function ControlConsole() {
             onClick={enact}
             className={cx(
               "grid h-[76px] w-[76px] place-items-center rounded-full border-4 text-center text-[10px] font-black uppercase leading-tight transition",
-              armed ? "armed-glow border-red-300 bg-danger text-white hover:brightness-110 active:scale-95" : "border-slate-600 bg-red-950 text-red-300/60",
+              armed ? "armed-glow border-red-300 bg-danger text-white hover:brightness-110 active:scale-95" : "border-red-200 bg-red-50 text-red-300",
             )}
             title="Enact — key E"
           >

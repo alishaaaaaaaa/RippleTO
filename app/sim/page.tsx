@@ -11,8 +11,9 @@ import { MetricsPanel } from "@/components/MetricsPanel";
 import { ControlConsole } from "@/components/ControlConsole";
 import { InterviewDialog } from "@/components/InterviewDialog";
 import { Overlays } from "@/components/Overlays";
+import { applyThemeToDocument, themeFor } from "@/lib/themes";
 
-const SimMap = dynamic(() => import("@/components/SimMap"), {
+const MapView = dynamic(() => import("@/components/MapView"), {
   ssr: false,
   loading: () => <div className="grid h-full place-items-center text-sm text-muted">Loading map…</div>,
 });
@@ -30,8 +31,8 @@ function ScenarioBanner() {
               <span
                 className={
                   view === "policy"
-                    ? "rounded bg-accent px-1.5 py-0.5 text-[10px] font-black tracking-wider text-ink"
-                    : "rounded bg-slate-300 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-ink"
+                    ? "rounded bg-accent px-1.5 py-0.5 text-[10px] font-black tracking-wider text-navy"
+                    : "rounded bg-slate-300 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-navy"
                 }
               >
                 {view === "policy" ? "WITH POLICY" : "STATUS QUO"}
@@ -72,7 +73,11 @@ function SimInner() {
   const id = params.get("s");
   const loadScenario = useRipple((s) => s.loadScenario);
   const current = useRipple((s) => s.scenario.id);
+  const kind = useRipple((s) => s.scenario.kind);
   useControls();
+
+  // Each scenario's signal colour tints the whole interface (the base stays near-white).
+  useEffect(() => applyThemeToDocument(themeFor(kind)), [kind]);
 
   useEffect(() => {
     if (id && id !== current) loadScenario(id);
@@ -86,7 +91,7 @@ function SimInner() {
         <PersonaPanel />
         <main className="flex min-w-0 flex-1 flex-col">
           <div className="relative min-h-0 flex-1">
-            <SimMap />
+            <MapView />
             <ScenarioBanner />
             <KeyHints />
           </div>
