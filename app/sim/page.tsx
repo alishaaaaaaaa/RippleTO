@@ -21,10 +21,10 @@ const MapView = dynamic(() => import("@/components/MapView"), {
 function ScenarioBanner() {
   const scenario = useRipple((s) => s.scenario);
   const view = useRipple((s) => s.view);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   return (
-    <div className="pointer-events-none absolute inset-x-3 top-3 z-[500] flex justify-center">
-      <div className="pointer-events-auto max-w-3xl rounded-xl border border-line bg-panel/90 px-4 py-3 shadow-xl backdrop-blur">
+    <div className="pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(520px,calc(100%-140px))]">
+      <div className="pointer-events-auto rounded-xl bg-panel/85 px-3.5 py-2.5 shadow-lg ring-1 ring-line backdrop-blur-md">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
@@ -37,7 +37,7 @@ function ScenarioBanner() {
               >
                 {view === "policy" ? "WITH POLICY" : "STATUS QUO"}
               </span>
-              <h1 className="truncate font-bold">{scenario.title}</h1>
+              <h1 className="truncate text-sm font-bold">{scenario.title}</h1>
               {scenario.isCustom && <span className="rounded bg-info/20 px-1.5 text-[10px] font-bold text-info">CUSTOM</span>}
             </div>
             {open && (
@@ -49,21 +49,11 @@ function ScenarioBanner() {
               </p>
             )}
           </div>
-          <button onClick={() => setOpen(!open)} className="text-xs text-muted hover:text-text">
-            {open ? "Hide" : "More"}
+          <button onClick={() => setOpen(!open)} className="shrink-0 text-xs text-muted hover:text-text" aria-label="About this scenario">
+            {open ? "Less" : "About"}
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function KeyHints() {
-  return (
-    <div className="pointer-events-none absolute bottom-3 right-3 z-[500] rounded-lg border border-line bg-panel/90 px-3 py-2 font-mono text-[10px] leading-relaxed text-muted backdrop-blur">
-      <div className="mb-0.5 font-sans font-semibold uppercase tracking-wider">Panel / keyboard</div>
-      ←/→ time · Space play · A arm · E enact
-      <br />B compare · I call resident · 1-3 scenario
     </div>
   );
 }
@@ -93,7 +83,6 @@ function SimInner() {
           <div className="relative min-h-0 flex-1">
             <MapView />
             <ScenarioBanner />
-            <KeyHints />
           </div>
           <ControlConsole />
         </main>
