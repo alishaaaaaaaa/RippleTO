@@ -18,8 +18,8 @@ Ripple is a civic scenario simulator. Pick a real Toronto decision, press the bi
 
 ```bash
 npm install
-cp .env.example .env.local      # optional: add GEMINI_API_KEY for live AI agents
-npm run dev                      # http://localhost:3000
+cp .env.example .env.local      
+npm run dev
 ```
 
 - **No API key? It still works.** Every AI feature has a template fallback, so the demo can't break if the Wi-Fi or the API does. The header shows `● AI agents live` or `○ AI offline (templates)`.
@@ -37,8 +37,6 @@ npm run dev                      # http://localhost:3000
 | B | — | Compare: status quo ↔ with policy |
 | I | — | Call the selected resident |
 | 1 / 2 / 3 | — | Switch scenario |
-
-The optional **Raspberry Pi Pico control panel** acts as a USB keyboard and sends exactly these keys. Unplug it and nothing breaks. See [`hardware/README.md`](hardware/README.md).
 
 ---
 
@@ -108,15 +106,6 @@ hardware/                  Pico firmware (code.py) + wiring guide
 docs/                      DATA.md, PITCH.md, IMPROVEMENTS.md
 ```
 
-### Adding a scenario
-
-1. Copy one of `lib/scenarios/*.ts`, change the text, events, overlays and params.
-2. Add it to `SCENARIOS` in `lib/scenarios/index.ts`.
-
-That's it: no engine or UI changes, as long as it's a `transit`, `housing` or `heat` kind. A new *kind* means adding a `run<Kind>()` function in `model.ts`.
-
----
-
 ## Responsible design
 
 - **Composite residents, not real people**, with fictional first names. No race or ethnicity fields: outcomes are driven by circumstances (income, tenure, car access, age, health, building type).
@@ -124,8 +113,5 @@ That's it: no engine or UI changes, as long as it's a `transit`, `housing` or `h
 - **Non-partisan.** No candidate predictions or endorsements. Briefings end with neutral questions residents can ask *any* candidate.
 - **Illustrative data is labelled as such** until replaced with Census figures (see [docs/DATA.md](docs/DATA.md)).
 
-## Before you present
-
-Read **[docs/PITCH.md](docs/PITCH.md)** (demo script, one-liners per prize track, judge Q&A) and **[docs/IMPROVEMENTS.md](docs/IMPROVEMENTS.md)** (highest-impact upgrades, in priority order).
 
 Map tiles © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors © [CARTO](https://carto.com/attributions).
