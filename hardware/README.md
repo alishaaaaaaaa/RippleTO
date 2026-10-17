@@ -38,11 +38,56 @@ Pin numbers count from the USB end: pins 1–20 run down the left side (with the
 | Encoder CLK | GP10 (pin 14) | |
 | Encoder DT | GP11 (pin 15) | |
 | Encoder SW | GP12 (pin 16) | |
-| Encoder + | **3V3(OUT) (pin 36)**, not VBUS | |
+| Encoder + | **3V3 rail** on the breadboard (see the screen section) or 3V3(OUT) pin 36 if there's no screen | |
 | Encoder GND | GND (pin 13) | |
 
 **Arcade button with 3 tabs?** Use the tabs marked **COM** and **NO** ("normally open").
 **Arcade button tabs:** strip ~1 cm off one end of a jumper wire, wrap it tightly around the metal tab, then tape or hot-glue it.
+
+## Optional: live screen (Grove LCD from the MLH booth)
+
+The app can send the current period, the armed state and the headline number to a **Grove 16×2 RGB LCD** on the panel. The backlight changes colour too: **blue** for status quo, **red** when armed, **green** or **orange** after enacting (better or worse than the status quo).
+
+This is a **bonus layer**: the buttons and knob work the same with or without it. If the screen isn't connected, it shows `SAFE` / `ARMED` straight from the switch.
+
+**Extra parts from the booth:** Grove LCD (RGB backlight), a Grove-to-female jumper cable (or 4 female-to-male jumpers pushed into the Grove plug), a breadboard, and for the optional armed light, 1 LED plus 1 resistor (220–330 Ω).
+
+### Wiring
+
+The Pico has only **one** 3.3 V pin, and both the encoder and the screen need it, so run it to the breadboard's **+ rail** and power both from there.
+
+| From | To |
+|---|---|
+| Pico **3V3(OUT)** (pin 36) | Breadboard **+** rail |
+| Encoder **+** | Breadboard **+** rail |
+| LCD **red** (VCC) | Breadboard **+** rail |
+| LCD **black** (GND) | Pico **GND** (pin 3) |
+| LCD **white** (SDA) | Pico **GP4** (pin 6) |
+| LCD **yellow** (SCL) | Pico **GP5** (pin 7) |
+| *(optional)* LED **long leg** | Pico **GP16** (pin 21) |
+| *(optional)* LED **short leg** → resistor → | Pico **GND** (pin 28) |
+
+Use **3V3, not VBUS (5 V)**, for the screen. The Pico's data pins aren't designed for 5 V.
+
+### Connecting it in the app
+
+1. Plug in the panel and open Ripple in **Chrome or Edge**.
+2. Click **Connect panel** in the top bar. A list of serial devices pops up; pick the Pico (it's usually called **CircuitPython CDC** or something like `usbmodem…`) and click **Connect**.
+3. The button turns green (**● Panel screen**) and the LCD switches to live data within a second.
+
+Browsers require that click once each time the page loads. Do it before the judges arrive.
+
+### Screen troubleshooting
+
+| Problem | Fix |
+|---|---|
+| Screen stays blank and the serial console says `LCD disabled: No pull up found on SDA or SCL` | Add two resistors (4.7 kΩ–10 kΩ) from **GP4 → + rail** and **GP5 → + rail**. Some Grove boards don't include them. |
+| Console says `LCD text chip (0x3E) not found` | SDA and SCL are swapped or loose. Check white → GP4 and yellow → GP5. |
+| Backlight colour works but no letters | Old (v4) screens need 5 V for the text. Ask the hardware staff for a v5 screen, or skip the screen; everything else still works. |
+| Shows `SAFE (no link)` while the app is open | Click **Connect panel** again and pick the other device in the list. |
+| **Connect panel** button missing | You're not in Chrome or Edge. |
+
+To see the console messages, open the Pico's serial console in [Mu Editor](https://codewith.mu/) or [Thonny](https://thonny.org/). **Close it before clicking Connect panel in the app**, because only one program can use the serial port at a time.
 
 ## Setup (15 minutes)
 
@@ -70,4 +115,5 @@ Pin numbers count from the USB end: pins 1–20 run down the left side (with the
 - [ ] Tested on the presentation laptop
 - [ ] Every control labelled on the box (KNOB = TIME, ARM, ENACT)
 - [ ] Wire joints hot-glued or taped
+- [ ] Clicked **Connect panel** before judging (if using the screen)
 - [ ] Rehearsed without the panel too (keyboard), in case it fails
