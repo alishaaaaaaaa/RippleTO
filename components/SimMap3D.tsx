@@ -28,18 +28,26 @@ import { alpha, themeFor, type Theme } from "@/lib/themes";
 const STYLES = ["https://tiles.openfreemap.org/styles/positron", "https://tiles.openfreemap.org/styles/liberty"];
 const LOAD_TIMEOUT_MS = 12000;
 
-const PITCH = 55;
-const BEARING = -18;
-const zoom3d = (s: Scenario) => s.mapView.zoom + 0.7;
+const PITCH = 60;
+const BEARING = -12;
+
+/** Close, tilted "hero" shots so real towers fill the frame. Custom scenarios use their template's shot. */
+const HERO: Record<string, { lat: number; lng: number; zoom: number; pitch: number; bearing: number }> = {
+  transit: { lat: 43.7345, lng: -79.5128, zoom: 13.9, pitch: 62, bearing: -8 },
+  housing: { lat: 43.6985, lng: -79.5105, zoom: 13.8, pitch: 60, bearing: 18 },
+  heat: { lat: 43.7565, lng: -79.5195, zoom: 14.3, pitch: 63, bearing: -28 },
+};
+const heroFor = (s: Scenario) => HERO[s.kind] ?? { ...s.mapView.center, zoom: s.mapView.zoom + 1.5, pitch: PITCH, bearing: BEARING };
 
 // City base palette (constant across scenarios — only the signal colour changes)
 const CITY = {
-  ground: "#f3f5f9",
-  land: "#eef1f6",
-  park: "#e5eee8",
-  water: "#d3e2f2",
-  minorRoad: "#dbe1ea",
-  rail: "#c9d1dd",
+  ground: "#e8edf4",
+  land: "#e6ebf2",
+  park: "#dfe8e3",
+  water: "#cadcef",
+  minorRoad: "#d9dfe8",
+  majorRoad: "#cfd7e2",
+  rail: "#c6ceda",
   label: "#5b6a82",
 };
 
@@ -70,6 +78,13 @@ export function webglSupported(): boolean {
   } catch {
     return false;
   }
+}
+
+/** Mix a hex colour with white (amount 0–1) — beams read as light, not paint. */
+function lighten(hex: string, amount: number): string {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * amount);
+  return `rgb(${mix((n >> 16) & 255)}, ${mix((n >> 8) & 255)}, ${mix(n & 255)})`;
 }
 
 const safe = (fn: () => void) => {
@@ -105,9 +120,9 @@ function paintCity(map: MLMap, t: Theme) {
               "match",
               ["get", "class"],
               ["motorway", "trunk", "primary"],
-              t.streets,
+              alpha(t.streets, 0.45),
               ["secondary", "tertiary"],
-              alpha(t.streets, 0.55),
+              CITY.majorRoad,
               ["rail", "transit"],
               CITY.rail,
               CITY.minorRoad,
@@ -118,11 +133,7 @@ function paintCity(map: MLMap, t: Theme) {
       } else if (sl === "waterway") safe(() => map.setPaintProperty(id, "line-color", CITY.water));
       else safe(() => map.setLayoutProperty(id, "visibility", "none"));
     } else if (l.type === "symbol") {
-      if (sl === "place") {
-        safe(() => map.setPaintProperty(id, "text-color", CITY.label));
-        safe(() => map.setPaintProperty(id, "text-halo-color", "#ffffff"));
-        safe(() => map.setPaintProperty(id, "icon-opacity", 0));
-      } else safe(() => map.setLayoutProperty(id, "visibility", "none"));
+      safe(() => map.setLayoutProperty(id, "visibility", "none")); // clean, label-free city
     } else if (l.type === "fill-extrusion") safe(() => map.setLayoutProperty(id, "visibility", "none"));
   }
 
@@ -134,13 +145,13 @@ function paintCity(map: MLMap, t: Theme) {
       ["coalesce", ["get", "render_height"], 0],
       0,
       t.glass[0],
-      40,
+      25,
       t.glass[1],
-      140,
+      90,
       t.glass[2],
     ]),
   );
-  safe(() => map.setLight({ anchor: "viewport", color: "#ffffff", intensity: 0.22, position: [1.3, 210, 35] }));
+  safe(() => map.setLight({ anchor: "viewport", color: "#ffffff", intensity: 0.5, position: [1.5, 90, 70] }));
   safe(() =>
     (map as unknown as { setSky: (s: Record<string, unknown>) => void }).setSky({
       "sky-color": "#f4f7fb",
@@ -204,10 +215,10 @@ function setupLayers(map: MLMap) {
       "source-layer": "building",
       minzoom: 13,
       paint: {
-        "fill-extrusion-color": "#eef2f8",
+        "fill-extrusion-color": "#dbe7f6",
         "fill-extrusion-height": ["coalesce", ["get", "render_height"], 8],
         "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
-        "fill-extrusion-opacity": 0.82,
+        "fill-extrusion-opacity": 0.68,
         "fill-extrusion-vertical-gradient": true,
       },
     });
@@ -219,7 +230,7 @@ function setupLayers(map: MLMap) {
     source: "ripple-lines",
     filter: ["==", ["get", "kind"], "corridor-lit"],
     layout: { "line-cap": "round", "line-join": "round" },
-    paint: { "line-color": ["get", "glow"], "line-width": 26, "line-blur": 16, "line-opacity": 0.75 },
+    paint: { "line-color": ["get", "glow"], "line-width": ["interpolate", ["linear"], ["zoom"], 11, 18, 14, 60, 16, 140], "line-blur": ["interpolate", ["linear"], ["zoom"], 11, 12, 14, 40, 16, 90], "line-opacity": 0.55 },
   });
   map.addLayer({
     id: "ripple-lines-solid",
@@ -269,10 +280,10 @@ function setupLayers(map: MLMap) {
     type: "circle",
     source: "ripple-beams-pt",
     paint: {
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 7, 13, 18, 16, 50],
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 8, 14, 34, 16, 80],
       "circle-color": ["get", "color"],
-      "circle-blur": 0.85,
-      "circle-opacity": 0.7,
+      "circle-blur": 0.9,
+      "circle-opacity": 0.85,
       "circle-pitch-alignment": "map",
     },
   });
@@ -402,8 +413,8 @@ function beamsData(s: Scenario, row: PersonaState[], positions: LatLng[], select
         const sel = selected === p.id;
         return {
           type: "Feature",
-          properties: { id: p.id, color: stateColor(s, row[i]), h: beamHeight(s, i, row[i]) * (sel ? 1.2 : 1) },
-          geometry: { type: "Polygon", coordinates: [polygonAround(positions[i], sel ? 48 : 32, 8)] },
+          properties: { id: p.id, color: lighten(stateColor(s, row[i]), 0.25), h: beamHeight(s, i, row[i]) * (sel ? 1.2 : 1) },
+          geometry: { type: "Polygon", coordinates: [polygonAround(positions[i], sel ? 26 : 15, 8)] },
         };
       }),
     ),
@@ -411,7 +422,7 @@ function beamsData(s: Scenario, row: PersonaState[], positions: LatLng[], select
   };
 }
 
-const BEAM_LABEL = { transit: "households represented", housing: "share of income on housing + transport", heat: "heat risk" } as const;
+const BEAM_LABEL = { transit: "households", housing: "% of income on housing + transit", heat: "heat risk" } as const;
 
 // Dash patterns cycled to make lines "flow" (MapLibre's standard animated-line technique).
 const DASHES: number[][] = [
@@ -466,10 +477,10 @@ export default function SimMap3D({ onFail }: { onFail: () => void }) {
       map = new maplibregl.Map({
         container: container.current,
         style: STYLES[0],
-        center: [s0.mapView.center.lng, s0.mapView.center.lat],
-        zoom: zoom3d(s0),
-        pitch: PITCH,
-        bearing: BEARING,
+        center: [heroFor(s0).lng, heroFor(s0).lat],
+        zoom: heroFor(s0).zoom,
+        pitch: heroFor(s0).pitch,
+        bearing: heroFor(s0).bearing,
         maxPitch: 75,
         attributionControl: { compact: true },
         canvasContextAttributes: { antialias: true },
@@ -515,9 +526,9 @@ export default function SimMap3D({ onFail }: { onFail: () => void }) {
     markers.current = PERSONAS.map((p) => {
       const el = document.createElement("div");
       el.className = "persona-pin";
-      el.style.width = "22px";
-      el.style.height = "22px";
-      el.style.fontSize = "10px";
+      el.style.width = "18px";
+      el.style.height = "18px";
+      el.style.fontSize = "9px";
       el.textContent = p.name[0];
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();
@@ -606,7 +617,8 @@ export default function SimMap3D({ onFail }: { onFail: () => void }) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    map.flyTo({ center: [scenario.mapView.center.lng, scenario.mapView.center.lat], zoom: zoom3d(scenario), pitch: PITCH, bearing: BEARING, duration: 1800 });
+    const h = heroFor(scenario);
+    map.flyTo({ center: [h.lng, h.lat], zoom: h.zoom, pitch: h.pitch, bearing: h.bearing, duration: 1800 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, scenario.id]);
 
@@ -618,7 +630,7 @@ export default function SimMap3D({ onFail }: { onFail: () => void }) {
       return;
     }
     if (!map || !ready || !flashAt) return;
-    map.easeTo({ pitch: 64, bearing: map.getBearing() + 40, zoom: map.getZoom() + 0.35, duration: 3200 });
+    map.easeTo({ pitch: 66, bearing: map.getBearing() + 35, zoom: map.getZoom() + 0.25, duration: 3200 });
   }, [flashAt, ready]);
 
   const hadSelection = useRef(false);
@@ -629,11 +641,12 @@ export default function SimMap3D({ onFail }: { onFail: () => void }) {
       const st = useRipple.getState();
       const i = PERSONAS.findIndex((p) => p.id === selected);
       const pos = st.sim[st.view].states[st.period - 1][i].position;
-      map.flyTo({ center: [pos.lng, pos.lat], zoom: 15.4, pitch: 64, bearing: map.getBearing() - 20, duration: 1700 });
+      map.flyTo({ center: [pos.lng, pos.lat], zoom: 15.6, pitch: 66, bearing: map.getBearing() - 20, duration: 1700 });
       hadSelection.current = true;
     } else if (hadSelection.current) {
       hadSelection.current = false;
-      map.flyTo({ center: [scenario.mapView.center.lng, scenario.mapView.center.lat], zoom: zoom3d(scenario), pitch: PITCH, bearing: BEARING, duration: 1600 });
+      const h = heroFor(scenario);
+      map.flyTo({ center: [h.lng, h.lat], zoom: h.zoom, pitch: h.pitch, bearing: h.bearing, duration: 1600 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, ready]);
@@ -648,33 +661,15 @@ export default function SimMap3D({ onFail }: { onFail: () => void }) {
     <div className="relative h-full w-full" style={{ background: CITY.ground }}>
       <div ref={container} className="h-full w-full" />
       {!ready && <div className="pointer-events-none absolute inset-0 grid place-items-center text-sm text-muted">Loading 3D city…</div>}
-      <div className="pointer-events-none absolute bottom-3 left-3 z-[500] rounded-lg border border-line bg-panel/90 px-3 py-2 text-[11px] shadow-sm backdrop-blur">
-        <div className="mb-1 flex items-center gap-2">
-          <span className="inline-block h-2 w-2 rounded-full" style={{ background: theme.accent, boxShadow: `0 0 8px ${theme.accent}` }} />
-          <span className="font-semibold uppercase tracking-wider text-muted">{theme.name}</span>
-        </div>
-        <div className="mb-1 text-muted">Beam height = {BEAM_LABEL[scenario.kind]}</div>
-        <div className="flex flex-wrap gap-x-3 gap-y-1">
-          {legendFor(scenario).map((l) => (
-            <span key={l.label} className="flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: l.color }} />
-              {l.label}
-            </span>
-          ))}
-        </div>
-        {scenario.kind === "heat" && (
-          <div className="mt-1 flex gap-3">
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: theme.accent }} /> cool space open
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-[#cbd5e1]" /> closed
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-4 rounded-sm" style={{ background: "linear-gradient(90deg,rgba(255,214,150,.6),rgba(255,84,112,.6))" }} /> heat
-            </span>
-          </div>
-        )}
+      <div className="pointer-events-none absolute bottom-4 left-4 z-[500] flex items-center gap-3 rounded-full bg-panel/85 px-3.5 py-1.5 text-[11px] text-muted shadow-md ring-1 ring-line backdrop-blur">
+        {legendFor(scenario).map((l) => (
+          <span key={l.label} className="flex items-center gap-1.5 whitespace-nowrap">
+            <span className="inline-block h-2 w-2 rounded-full" style={{ background: l.color }} />
+            {l.label}
+          </span>
+        ))}
+        <span className="h-3 w-px bg-line" />
+        <span className="whitespace-nowrap">beam = {BEAM_LABEL[scenario.kind]}</span>
       </div>
     </div>
   );

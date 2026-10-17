@@ -1,14 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useRipple } from "@/lib/store";
-import { SCENARIOS, TRACK_LABELS } from "@/lib/scenarios";
+import { SCENARIOS } from "@/lib/scenarios";
 import { cx } from "@/lib/ui";
 import { SourcesDialog } from "./SourcesDialog";
 import { PanelButton } from "./PanelButton";
 
+const SHORTCUTS: [string, string][] = [
+  ["← / →", "Move through time"],
+  ["Space", "Play / pause"],
+  ["A / D", "Arm / disarm"],
+  ["E", "Enact the policy"],
+  ["B", "Compare status quo ↔ policy"],
+  ["I", "Call the selected resident"],
+  ["1 2 3", "Switch scenario"],
+];
+
+/** Minimal header: brand, scenario, one primary action. Everything else lives in the ⋯ menu. */
 export function Header() {
   const router = useRouter();
   const scenario = useRipple((s) => s.scenario);
@@ -18,6 +29,8 @@ export function Header() {
   const soundOn = useRipple((s) => s.soundOn);
   const toggleSound = useRipple((s) => s.toggleSound);
   const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/health")
@@ -26,20 +39,31 @@ export function Header() {
       .catch(() => setAiEnabled(false));
   }, [setAiEnabled]);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    window.addEventListener("mousedown", close);
+    return () => window.removeEventListener("mousedown", close);
+  }, [menuOpen]);
+
   return (
-    <header className="flex h-14 shrink-0 items-center gap-4 border-b border-line bg-panel px-4">
+    <header className="relative z-[1000] flex h-14 shrink-0 items-center gap-4 border-b border-line bg-panel/95 px-5 backdrop-blur">
       <Link href="/" className="flex items-center gap-2">
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent font-black text-navy">R</span>
-        <span className="text-lg font-extrabold tracking-tight">
+        <span className="grid h-7 w-7 place-items-center rounded-lg bg-accent text-sm font-black text-navy">R</span>
+        <span className="text-base font-extrabold tracking-tight">
           Ripple<span className="text-accent-deep">TO</span>
         </span>
       </Link>
+
+      <span className="h-5 w-px bg-line" />
 
       <select
         aria-label="Scenario"
         value={scenario.id}
         onChange={(e) => router.push(`/sim?s=${e.target.value}`)}
-        className="max-w-72 truncate rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-sm font-semibold"
+        className="max-w-80 truncate rounded-lg border-0 bg-transparent py-1.5 pr-6 text-sm font-semibold outline-none hover:bg-panel-2"
       >
         {SCENARIOS.map((s, i) => (
           <option key={s.id} value={s.id}>
@@ -53,37 +77,70 @@ export function Header() {
         ))}
       </select>
 
-      <div className="hidden items-center gap-1.5 xl:flex">
-        {scenario.tracks.map((t) => (
-          <span key={t} className="rounded-full border border-line px-2 py-0.5 text-[11px] text-muted">
-            {TRACK_LABELS[t]}
-          </span>
-        ))}
-      </div>
-
-      <div className="ml-auto flex items-center gap-2 text-xs">
-        <span className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-amber-700" title="Neighbourhood data from the 2021 Census (City of Toronto Neighbourhood Profiles). Library sites from Toronto Public Library open data.">
-          2021 Census data
-        </span>
-        <span
-          className={cx(
-            "rounded-md border px-2 py-1",
-            aiEnabled ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700" : "border-line text-muted",
-          )}
-          title={aiEnabled ? "Gemini is generating resident voices and briefings" : "No GEMINI_API_KEY — using built-in templates"}
+      <div className="ml-auto flex items-center gap-2">
+        <Link
+          href={`/briefing?s=${scenario.id}`}
+          className="rounded-lg bg-accent px-3.5 py-1.5 text-sm font-semibold text-navy shadow-sm hover:brightness-105"
         >
-          {aiEnabled === null ? "AI …" : aiEnabled ? "● AI agents live" : "○ AI offline (templates)"}
-        </span>
-        <PanelButton />
-        <button onClick={toggleSound} className="rounded-md border border-line px-2 py-1 hover:bg-panel-2" title="Toggle alert sound">
-          {soundOn ? "🔊" : "🔇"}
-        </button>
-        <button onClick={() => setSourcesOpen(true)} className="rounded-md border border-line px-2 py-1 hover:bg-panel-2">
-          Data & limits
-        </button>
-        <Link href={`/briefing?s=${scenario.id}`} className="rounded-md bg-accent px-3 py-1.5 font-semibold text-navy hover:brightness-110">
-          Ward briefing →
+          Ward briefing
         </Link>
+
+        <div ref={menuRef} className="relative">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="relative grid h-8 w-8 place-items-center rounded-lg text-lg leading-none text-muted hover:bg-panel-2"
+            aria-label="More"
+            aria-expanded={menuOpen}
+          >
+            ⋯
+            <span
+              className={cx("absolute right-1 top-1 h-1.5 w-1.5 rounded-full", aiEnabled ? "bg-emerald-500" : "bg-slate-300")}
+              title={aiEnabled ? "AI agents live" : "AI offline"}
+            />
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 top-10 w-72 overflow-hidden rounded-xl border border-line bg-panel text-sm shadow-xl">
+              <div className="space-y-1 border-b border-line p-3 text-xs text-muted">
+                <div className="flex items-center gap-2">
+                  <span className={cx("h-2 w-2 rounded-full", aiEnabled ? "bg-emerald-500" : "bg-slate-300")} />
+                  {aiEnabled === null ? "Checking AI…" : aiEnabled ? "AI agents live (Gemini)" : "AI offline — using built-in templates"}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-accent" /> 2021 Census neighbourhood data
+                </div>
+              </div>
+              <div className="p-1.5">
+                <button
+                  onClick={() => {
+                    setSourcesOpen(true);
+                    setMenuOpen(false);
+                  }}
+                  className="w-full rounded-lg px-3 py-2 text-left hover:bg-panel-2"
+                >
+                  Data, assumptions & limits
+                </button>
+                <button onClick={toggleSound} className="w-full rounded-lg px-3 py-2 text-left hover:bg-panel-2">
+                  Alert sound: {soundOn ? "on" : "off"}
+                </button>
+                <div className="px-1.5 py-1 [&>button]:w-full [&>button]:text-left">
+                  <PanelButton />
+                </div>
+              </div>
+              <div className="border-t border-line p-3">
+                <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">Panel / keyboard</div>
+                <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+                  {SHORTCUTS.map(([k, v]) => (
+                    <div key={k} className="contents">
+                      <kbd className="rounded bg-panel-2 px-1.5 font-mono text-[11px]">{k}</kbd>
+                      <span className="text-muted">{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       <SourcesDialog open={sourcesOpen} onClose={() => setSourcesOpen(false)} />
     </header>

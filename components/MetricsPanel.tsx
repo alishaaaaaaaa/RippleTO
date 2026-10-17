@@ -31,8 +31,8 @@ function Sparkline({ base, policy, upTo, showPolicy }: { base: number[]; policy:
   const all = [...base, ...(showPolicy ? policy : [])];
   const min = Math.min(...all, 0);
   const max = Math.max(...all, 1);
-  const W = 120;
-  const H = 32;
+  const W = 250;
+  const H = 36;
   const x = (i: number) => (i / Math.max(1, base.length - 1)) * W;
   const y = (v: number) => H - ((v - min) / (max - min || 1)) * H;
   const path = (arr: number[]) =>
@@ -63,21 +63,36 @@ function MetricRow({ m, hero }: { m: MetricDef; hero?: boolean }) {
   const delta = policySeries[period - 1] - baseSeries[period - 1];
   const good = m.better === "up" ? delta > 0 : delta < 0;
 
-  return (
-    <div className={cx("rounded-xl border border-line bg-panel p-3", hero && "border-accent/40 bg-gradient-to-br from-accent/10 to-transparent")}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="text-xs font-medium text-muted" title={m.description}>
-          {m.label}
+  if (hero)
+    return (
+      <div className="rounded-2xl bg-panel p-4 shadow-sm ring-1 ring-line">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-accent" style={{ boxShadow: "0 0 8px var(--color-accent)" }} />
+          <div className="text-xs font-medium text-muted" title={m.description}>
+            {m.label}
+          </div>
         </div>
-        <Sparkline base={baseSeries} policy={policySeries} upTo={period} showPolicy={showCompare} />
+        <div className="mt-2 font-mono text-4xl font-bold tabular-nums tracking-tight">{formatMetric(animated, m.format)}</div>
+        <div className="mt-1 h-5">
+          {showCompare && Math.abs(delta) > 0.0001 && (
+            <span className={cx("font-mono text-xs font-semibold", good ? "text-good" : "text-bad")}>{formatDelta(delta, m.format)} vs status quo</span>
+          )}
+        </div>
+        <div className="mt-2">
+          <Sparkline base={baseSeries} policy={policySeries} upTo={period} showPolicy={showCompare} />
+        </div>
       </div>
-      <div className="mt-1 flex items-baseline gap-2">
-        <div className={cx("font-mono font-bold tabular-nums", hero ? "text-3xl" : "text-xl")}>{formatMetric(animated, m.format)}</div>
+    );
+
+  return (
+    <div className="rounded-xl bg-panel px-3 py-2.5 ring-1 ring-line" title={m.description}>
+      <div className="line-clamp-2 min-h-[2.4em] text-[11px] leading-tight text-muted">{m.label}</div>
+      <div className="mt-1 font-mono text-base font-bold tabular-nums">{formatMetric(animated, m.format)}</div>
+      <div className="h-4">
         {showCompare && Math.abs(delta) > 0.0001 && (
-          <div className={cx("font-mono text-xs font-semibold", good ? "text-good" : "text-bad")}>{formatDelta(delta, m.format)} vs status quo</div>
+          <span className={cx("font-mono text-[10px] font-semibold", good ? "text-good" : "text-bad")}>{formatDelta(delta, m.format)}</span>
         )}
       </div>
-      {hero && <div className="mt-1 text-[11px] leading-snug text-muted">{m.description}</div>}
     </div>
   );
 }
@@ -88,46 +103,36 @@ export function MetricsPanel() {
   const period = useRipple((s) => s.period);
   const hero = scenario.metrics.find((m) => m.id === scenario.heroMetric) ?? scenario.metrics[0];
   const rest = scenario.metrics.filter((m) => m.id !== hero.id);
-  const events = scenario.events
-    .filter((e) => e.arm === "both" || e.arm === view)
-    .filter((e) => e.period <= period)
-    .sort((a, b) => b.period - a.period);
+  const visible = scenario.events.filter((e) => (e.arm === "both" || e.arm === view) && e.period <= period).sort((a, b) => b.period - a.period);
+  const now = visible.filter((e) => e.period === period);
+  const latest = now.length ? now : visible.slice(0, 1);
 
   return (
-    <aside className="flex h-full w-[360px] shrink-0 flex-col border-l border-line bg-ink">
-      <div className="border-b border-line px-4 py-3">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-          {view === "policy" ? "With policy" : "Status quo"} · {scenario.periodLabels[period - 1]}
-        </div>
+    <aside className="flex h-full w-[290px] shrink-0 flex-col border-l border-line bg-ink">
+      <div className="px-4 pb-2 pt-4 text-xs font-semibold text-muted">
+        {view === "policy" ? "With policy" : "Status quo"} · {scenario.periodLabels[period - 1]}
       </div>
-      <div className="scroll-thin flex-1 space-y-2 overflow-y-auto p-3">
+      <div className="scroll-thin flex-1 space-y-3 overflow-y-auto px-3 pb-4">
         <MetricRow m={hero} hero />
-        <div className="grid grid-cols-1 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {rest.map((m) => (
             <MetricRow key={m.id} m={m} />
           ))}
         </div>
 
-        <div className="pt-3">
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted">Event feed</div>
-          <div className="space-y-2">
-            {events.length === 0 && <div className="text-xs text-muted">Nothing yet.</div>}
-            {events.map((e, i) => (
-              <div
-                key={`${e.period}-${e.title}`}
-                className={cx("rounded-lg border border-line bg-panel p-2.5", e.period === period ? "opacity-100" : "opacity-60")}
-              >
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="inline-block h-2 w-2 rounded-full" style={{ background: SEVERITY_COLOR[e.severity] }} />
-                  <span className="font-mono text-muted">{scenario.periodLabels[e.period - 1]}</span>
-                  {i === 0 && e.period === period && <span className="rounded bg-accent/20 px-1.5 text-[10px] font-bold text-accent-deep">NEW</span>}
+        {latest.length > 0 && (
+          <div className="space-y-2 pt-1">
+            {latest.map((e) => (
+              <div key={`${e.period}-${e.title}`} className={cx("rounded-xl border-l-[3px] bg-panel px-3 py-2.5 ring-1 ring-line", e.period !== period && "opacity-60")} style={{ borderLeftColor: SEVERITY_COLOR[e.severity] }}>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted">
+                  {e.period === period ? "Now" : scenario.periodLabels[e.period - 1]}
                 </div>
-                <div className="mt-1 text-sm font-semibold">{e.title}</div>
-                <div className="text-xs leading-snug text-muted">{e.description}</div>
+                <div className="mt-0.5 text-sm font-semibold leading-snug">{e.title}</div>
+                <div className="mt-0.5 text-xs leading-snug text-muted">{e.description}</div>
               </div>
             ))}
           </div>
-        </div>
+        )}
       </div>
     </aside>
   );

@@ -40,7 +40,7 @@ export default function MapView() {
       )}
 
       {can3d && (
-        <div className="absolute bottom-[84px] right-3 z-[600] inline-flex overflow-hidden rounded-lg border border-line bg-panel/90 text-xs font-semibold backdrop-blur">
+        <div className="absolute bottom-4 right-4 z-[600] inline-flex overflow-hidden rounded-lg bg-panel/90 text-xs font-semibold shadow-md ring-1 ring-line backdrop-blur">
           <button
             onClick={() => {
               setFailed3d(false);

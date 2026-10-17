@@ -18,7 +18,7 @@ export function ControlConsole() {
   const N = scenario.periodLabels.length;
 
   return (
-    <div className="flex shrink-0 items-stretch gap-4 border-t border-line bg-panel px-4 py-3">
+    <div className="flex shrink-0 items-stretch gap-4 border-t border-line bg-panel px-5 py-3">
       {/* Timeline */}
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
         <div className="flex items-center gap-2">
@@ -35,17 +35,17 @@ export function ControlConsole() {
           <button onClick={next} className="rounded-md border border-line px-2 py-1 text-sm hover:bg-panel-2" aria-label="Next period">
             ▶
           </button>
-          <div className="ml-2 font-mono text-lg font-bold">{scenario.periodLabels[period - 1]}</div>
+          <div className="ml-2 whitespace-nowrap font-mono text-lg font-bold">{scenario.periodLabels[period - 1]}</div>
           <div className="ml-auto inline-flex overflow-hidden rounded-lg border border-line text-xs font-semibold">
             <button
               onClick={() => setView("baseline")}
-              className={cx("px-3 py-1.5", view === "baseline" ? "bg-slate-200 text-navy" : "text-muted hover:bg-panel-2")}
+              className={cx("whitespace-nowrap px-3 py-1.5", view === "baseline" ? "bg-slate-200 text-navy" : "text-muted hover:bg-panel-2")}
             >
               Status quo
             </button>
             <button
               onClick={() => setView("policy")}
-              className={cx("px-3 py-1.5", view === "policy" ? "bg-accent text-navy" : "text-muted hover:bg-panel-2", !enacted && "opacity-40")}
+              className={cx("whitespace-nowrap px-3 py-1.5", view === "policy" ? "bg-accent text-navy" : "text-muted hover:bg-panel-2", !enacted && "opacity-40")}
             >
               With policy
             </button>
