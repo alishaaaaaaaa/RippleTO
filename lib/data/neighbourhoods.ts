@@ -3,13 +3,15 @@ import type { Neighbourhood } from "@/lib/types";
 /**
  * Neighbourhoods used by the personas.
  *
- * ⚠️ DATA STATUS: ILLUSTRATIVE.
- * Centres are approximate. Ward numbers follow Toronto's 25-ward map but some
- * neighbourhoods straddle ward lines — confirm with the City Wards dataset.
- * Indicators are rough placeholders in a plausible range so the app works
- * out of the box. Before judging, replace them with real values from the
- * City of Toronto "Neighbourhood Profiles" (2021 Census) dataset and flip
- * `dataStatus` to "verified". See docs/DATA.md for exact steps.
+ * DATA: City of Toronto Neighbourhood Profiles, 2021 Census, 158-neighbourhood
+ * model (25% sample data). https://open.toronto.ca/dataset/neighbourhood-profiles/
+ *  - medianHouseholdIncome: "Median total income of household in 2020 ($)"
+ *  - renterPct: Renter ÷ "Total - Private households by tenure"
+ *  - transitCommutePct: Public transit ÷ "Total - Main mode of commuting"
+ * Caveat: the Census was taken in May 2021, during COVID, so transit
+ * commuting shares are lower than pre-pandemic levels.
+ * Centres are approximate. Ward numbers follow Toronto's 25-ward map; some
+ * neighbourhoods straddle ward lines.
  */
 export const NEIGHBOURHOODS: Neighbourhood[] = [
   {
@@ -18,8 +20,8 @@ export const NEIGHBOURHOODS: Neighbourhood[] = [
     ward: 7,
     wardName: "Humber River–Black Creek",
     center: { lat: 43.7465, lng: -79.5155 },
-    indicators: { medianHouseholdIncome: 62000, renterPct: 0.55, transitCommutePct: 0.38 },
-    dataStatus: "illustrative",
+    indicators: { medianHouseholdIncome: 70500, renterPct: 0.482, transitCommutePct: 0.276 },
+    dataStatus: "verified",
   },
   {
     id: "black-creek",
@@ -27,8 +29,8 @@ export const NEIGHBOURHOODS: Neighbourhood[] = [
     ward: 7,
     wardName: "Humber River–Black Creek",
     center: { lat: 43.7645, lng: -79.5215 },
-    indicators: { medianHouseholdIncome: 55000, renterPct: 0.62, transitCommutePct: 0.4 },
-    dataStatus: "illustrative",
+    indicators: { medianHouseholdIncome: 65000, renterPct: 0.674, transitCommutePct: 0.293 },
+    dataStatus: "verified",
   },
   {
     id: "weston",
@@ -36,8 +38,8 @@ export const NEIGHBOURHOODS: Neighbourhood[] = [
     ward: 5,
     wardName: "York South–Weston",
     center: { lat: 43.7005, lng: -79.5165 },
-    indicators: { medianHouseholdIncome: 58000, renterPct: 0.6, transitCommutePct: 0.33 },
-    dataStatus: "illustrative",
+    indicators: { medianHouseholdIncome: 64500, renterPct: 0.645, transitCommutePct: 0.295 },
+    dataStatus: "verified",
   },
   {
     id: "mount-dennis",
@@ -45,8 +47,8 @@ export const NEIGHBOURHOODS: Neighbourhood[] = [
     ward: 5,
     wardName: "York South–Weston",
     center: { lat: 43.6885, lng: -79.4995 },
-    indicators: { medianHouseholdIncome: 63000, renterPct: 0.5, transitCommutePct: 0.32 },
-    dataStatus: "illustrative",
+    indicators: { medianHouseholdIncome: 70500, renterPct: 0.525, transitCommutePct: 0.310 },
+    dataStatus: "verified",
   },
   {
     id: "rockcliffe-smythe",
@@ -54,8 +56,8 @@ export const NEIGHBOURHOODS: Neighbourhood[] = [
     ward: 5,
     wardName: "York South–Weston",
     center: { lat: 43.6745, lng: -79.4935 },
-    indicators: { medianHouseholdIncome: 72000, renterPct: 0.38, transitCommutePct: 0.26 },
-    dataStatus: "illustrative",
+    indicators: { medianHouseholdIncome: 69000, renterPct: 0.438, transitCommutePct: 0.271 },
+    dataStatus: "verified",
   },
   {
     id: "mount-olive",
@@ -63,8 +65,8 @@ export const NEIGHBOURHOODS: Neighbourhood[] = [
     ward: 1,
     wardName: "Etobicoke North",
     center: { lat: 43.7465, lng: -79.5875 },
-    indicators: { medianHouseholdIncome: 66000, renterPct: 0.5, transitCommutePct: 0.27 },
-    dataStatus: "illustrative",
+    indicators: { medianHouseholdIncome: 76500, renterPct: 0.540, transitCommutePct: 0.221 },
+    dataStatus: "verified",
   },
   {
     id: "south-parkdale",
@@ -72,8 +74,8 @@ export const NEIGHBOURHOODS: Neighbourhood[] = [
     ward: 4,
     wardName: "Parkdale–High Park",
     center: { lat: 43.6375, lng: -79.4385 },
-    indicators: { medianHouseholdIncome: 52000, renterPct: 0.85, transitCommutePct: 0.45 },
-    dataStatus: "illustrative",
+    indicators: { medianHouseholdIncome: 57200, renterPct: 0.849, transitCommutePct: 0.419 },
+    dataStatus: "verified",
   },
   {
     id: "thorncliffe-park",
@@ -81,8 +83,8 @@ export const NEIGHBOURHOODS: Neighbourhood[] = [
     ward: 15,
     wardName: "Don Valley West",
     center: { lat: 43.7055, lng: -79.3465 },
-    indicators: { medianHouseholdIncome: 57000, renterPct: 0.8, transitCommutePct: 0.4 },
-    dataStatus: "illustrative",
+    indicators: { medianHouseholdIncome: 67000, renterPct: 0.859, transitCommutePct: 0.295 },
+    dataStatus: "verified",
   },
   {
     id: "annex",
@@ -90,8 +92,8 @@ export const NEIGHBOURHOODS: Neighbourhood[] = [
     ward: 11,
     wardName: "University–Rosedale",
     center: { lat: 43.6705, lng: -79.4035 },
-    indicators: { medianHouseholdIncome: 110000, renterPct: 0.62, transitCommutePct: 0.4 },
-    dataStatus: "illustrative",
+    indicators: { medianHouseholdIncome: 85000, renterPct: 0.591, transitCommutePct: 0.245 },
+    dataStatus: "verified",
   },
   {
     id: "scarborough-village",
@@ -99,8 +101,8 @@ export const NEIGHBOURHOODS: Neighbourhood[] = [
     ward: 24,
     wardName: "Scarborough–Guildwood",
     center: { lat: 43.7385, lng: -79.2155 },
-    indicators: { medianHouseholdIncome: 60000, renterPct: 0.52, transitCommutePct: 0.3 },
-    dataStatus: "illustrative",
+    indicators: { medianHouseholdIncome: 71500, renterPct: 0.550, transitCommutePct: 0.327 },
+    dataStatus: "verified",
   },
 ];
 

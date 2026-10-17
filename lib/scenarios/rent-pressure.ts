@@ -78,6 +78,7 @@ export const rentPressure: Scenario = {
   ],
   heroMetric: "households_displaced",
   assumptions: [
+    "Household weights come from 2021 Census counts: neighbourhood households × the share matching each resident's tenure, household size and age group (shares treated as independent, so weights are approximate).",
     "Renters renew once a year. In pressure areas, renewals jump ~9% (renovation, above-guideline or vacancy-reset increases); elsewhere ~2.5%, close to Ontario's rent-increase guideline.",
     "'Cost-burdened' means housing + transport over 45% of income; sustained spending over 65% for two months forces a move.",
     "Displaced households either take a roommate (younger singles) or move further from transit: rent −20%, but commute and transport costs rise.",
@@ -87,13 +88,14 @@ export const rentPressure: Scenario = {
   limitations: [
     "The City cannot set rent increases — that's provincial. The policy only uses municipal tools: acquisition, enforcement and benefits.",
     "Acquisition capital costs are not counted in 'program cost'; only the benefit payments are.",
-    "Composite households and illustrative weights. Results are directional, not a forecast.",
+    "Composite households weighted with 2021 Census data. Results are directional, not a forecast.",
+    "2021 Census was taken in May 2021, during COVID, so transit commuting shares are lower than usual.",
   ],
   sources: [
+    { label: "City of Toronto Open Data — Neighbourhood Profiles, 2021 Census (158-neighbourhood model)", url: "https://open.toronto.ca/dataset/neighbourhood-profiles/" },
     { label: "City of Toronto — Multi-Unit Residential Acquisition (MURA) program", url: "https://www.toronto.ca/community-people/community-partners/affordable-housing-partners/current-initiatives/multi-unit-residential-acquisition-program/" },
     { label: "Toronto Rent Bank", url: "https://www.toronto.ca/rentbank" },
     { label: "CMHC — housing affordability (30% shelter-cost standard)", url: "https://www.cmhc-schl.gc.ca/" },
-    { label: "City of Toronto — Neighbourhood Profiles (2021 Census)", url: "https://www.toronto.ca/city-government/data-research-maps/neighbourhoods-communities/neighbourhood-profiles/" },
-    { label: "City of Toronto Open Data portal", url: "https://open.toronto.ca/" },
+        { label: "City of Toronto Open Data portal", url: "https://open.toronto.ca/" },
   ],
 };

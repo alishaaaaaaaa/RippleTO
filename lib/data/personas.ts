@@ -9,8 +9,11 @@ import type { Persona } from "@/lib/types";
  *  - No race/ethnicity fields. Outcomes are driven by circumstances
  *    (income, tenure, car access, age, health, building type), which is both
  *    more honest and what the City's own equity analyses use.
- *  - `represents` is an illustrative weight so metrics read as
- *    "≈ households", not individuals. Tune it from census household counts.
+ *  - `represents` = households this composite stands in for, from the 2021
+ *    Census (Neighbourhood Profiles): neighbourhood private households ×
+ *    tenure share (renter or owner) × household-size share (one-person or 2+)
+ *    × age share (65+ population share, or its complement)
+ *    Assumes these shares are independent, so weights are approximate.
  */
 export const PERSONAS: Persona[] = [
   {
@@ -24,7 +27,7 @@ export const PERSONAS: Persona[] = [
     home: { lat: 43.749, lng: -79.517 },
     destination: { lat: 43.7228, lng: -79.4891, label: "Humber River Hospital" },
     bio: "Works 7am shifts at Humber River Hospital. Rides the 35 Jane south every morning, then transfers. Daycare closes at 6pm, so a late bus means a late fee.",
-    represents: 3200,
+    represents: 3150,
     money: { incomeMonthly: 3900, tenure: "rent", housingCostMonthly: 1850, leaseRenewalPeriod: 4 },
     travel: {
       hasCar: false,
@@ -50,7 +53,7 @@ export const PERSONAS: Persona[] = [
     home: { lat: 43.7625, lng: -79.5225 },
     destination: { lat: 43.723, lng: -79.5085, label: "Clinic near Jane & Wilson" },
     bio: "Has COPD and goes to a clinic near Jane & Wilson twice a week. Lives on the 11th floor of a community housing building with no air conditioning.",
-    represents: 1800,
+    represents: 160,
     money: { incomeMonthly: 2300, tenure: "social", housingCostMonthly: 780 },
     travel: {
       hasCar: false,
@@ -76,7 +79,7 @@ export const PERSONAS: Persona[] = [
     home: { lat: 43.702, lng: -79.518 },
     destination: { lat: 43.7805, lng: -79.529, label: "Warehouse near Steeles & Jane" },
     bio: "Drives a 2012 Corolla up Jane Street to a warehouse near Steeles for 6am starts. Rents a basement apartment in Weston that's been listed for sale.",
-    represents: 2600,
+    represents: 1550,
     money: { incomeMonthly: 3600, tenure: "rent", housingCostMonthly: 1650, leaseRenewalPeriod: 2 },
     travel: {
       hasCar: true,
@@ -128,7 +131,7 @@ export const PERSONAS: Persona[] = [
     home: { lat: 43.766, lng: -79.519 },
     destination: { lat: 43.7735, lng: -79.5019, label: "York University" },
     bio: "First-year student splitting a 4-bedroom rental. Works weekends at Yorkgate Mall. Rent is her biggest cost after tuition.",
-    represents: 2200,
+    represents: 990,
     money: { incomeMonthly: 1700, tenure: "rent", housingCostMonthly: 900, leaseRenewalPeriod: 9 },
     travel: {
       hasCar: false,
@@ -154,7 +157,7 @@ export const PERSONAS: Persona[] = [
     home: { lat: 43.676, lng: -79.495 },
     destination: { lat: 43.688, lng: -79.5015, label: "Pharmacy & seniors' centre near Jane & Eglinton" },
     bio: "Has owned her house for 50 years. Heart condition, uses a walker. Takes the bus two stops to the pharmacy because the walk is too far.",
-    represents: 1400,
+    represents: 300,
     money: { incomeMonthly: 2600, tenure: "own", housingCostMonthly: 900 },
     travel: {
       hasCar: false,
@@ -180,7 +183,7 @@ export const PERSONAS: Persona[] = [
     home: { lat: 43.639, lng: -79.437 },
     destination: { lat: 43.6385, lng: -79.4205, label: "Café in Liberty Village" },
     bio: "Bikes everywhere. Rents in an older Parkdale walk-up where three neighbours have received renovation eviction notices this year.",
-    represents: 2800,
+    represents: 4310,
     money: { incomeMonthly: 3000, tenure: "rent", housingCostMonthly: 1500, leaseRenewalPeriod: 6 },
     travel: {
       hasCar: false,
@@ -206,7 +209,7 @@ export const PERSONAS: Persona[] = [
     home: { lat: 43.706, lng: -79.348 },
     destination: { lat: 43.7068, lng: -79.3442, label: "Local school & grocery" },
     bio: "Runs a licensed home daycare from an 18th-floor apartment in a 1960s tower with no central air. Walks everywhere in the neighbourhood.",
-    represents: 3000,
+    represents: 3870,
     money: { incomeMonthly: 5200, tenure: "rent", housingCostMonthly: 2100, leaseRenewalPeriod: 11 },
     travel: {
       hasCar: false,
@@ -232,7 +235,7 @@ export const PERSONAS: Persona[] = [
     home: { lat: 43.672, lng: -79.406 },
     destination: { lat: 43.6629, lng: -79.3957, label: "University of Toronto" },
     bio: "Owns a detached house with central air. Bikes to campus. Included so the simulation shows who policies *don't* touch.",
-    represents: 1200,
+    represents: 2710,
     money: { incomeMonthly: 14000, tenure: "own", housingCostMonthly: 4200 },
     travel: {
       hasCar: true,
@@ -258,7 +261,7 @@ export const PERSONAS: Persona[] = [
     home: { lat: 43.7395, lng: -79.214 },
     destination: { lat: 43.648, lng: -79.38, label: "Office towers downtown" },
     bio: "Cleans downtown offices overnight and gets home around 7am after an 80-minute trip with two transfers. Has type 2 diabetes.",
-    represents: 2000,
+    represents: 740,
     money: { incomeMonthly: 2800, tenure: "rent", housingCostMonthly: 1400, leaseRenewalPeriod: 7 },
     travel: {
       hasCar: false,
@@ -284,7 +287,7 @@ export const PERSONAS: Persona[] = [
     home: { lat: 43.747, lng: -79.588 },
     destination: { lat: 43.759, lng: -79.518, label: "Courier depot near Jane & Finch" },
     bio: "Drives to a depot near Jane & Finch, then drives all day. A slower Jane Street means fewer deliveries per shift.",
-    represents: 2400,
+    represents: 3780,
     money: { incomeMonthly: 4800, tenure: "rent", housingCostMonthly: 1950, leaseRenewalPeriod: 3 },
     travel: {
       hasCar: true,
@@ -310,7 +313,7 @@ export const PERSONAS: Persona[] = [
     home: { lat: 43.7445, lng: -79.514 },
     destination: { lat: 43.6405, lng: -79.4505, label: "Hospital placement in Parkdale" },
     bio: "Rides the 935 Jane Express to Line 2 for a hospital placement. Studies on the bus — but it's often too packed to sit.",
-    represents: 2100,
+    represents: 840,
     money: { incomeMonthly: 2400, tenure: "rent", housingCostMonthly: 1100, leaseRenewalPeriod: 5 },
     travel: {
       hasCar: false,

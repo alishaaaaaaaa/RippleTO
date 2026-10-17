@@ -78,6 +78,7 @@ export const heatWave: Scenario = {
   ],
   heroMetric: "residents_high_risk",
   assumptions: [
+    "Household weights come from 2021 Census counts: neighbourhood households × the share matching each resident's tenure, household size and age group (shares treated as independent, so weights are approximate).",
     "Risk rises with humidex, no air conditioning, age 65+, living alone, chronic illness and living on a high floor. It builds up over consecutive hot periods without relief.",
     "Indoor heat lingers overnight, so night periods still carry risk even when outdoor humidex drops.",
     "A household can reach a site within their walking range, or within ~3 km if they have a car or (under the policy) free transit.",
@@ -86,12 +87,13 @@ export const heatWave: Scenario = {
   limitations: [
     "Not a medical model. It shows relative risk and access gaps, not health outcomes for any individual.",
     "Site list is a small, approximate sample of the City's 500+ cool spaces.",
-    "Composite households and illustrative weights. Results are directional, not a forecast.",
+    "Composite households weighted with 2021 Census data. Results are directional, not a forecast.",
+    "2021 Census was taken in May 2021, during COVID, so transit commuting shares are lower than usual.",
   ],
   sources: [
+    { label: "City of Toronto Open Data — Neighbourhood Profiles, 2021 Census (158-neighbourhood model)", url: "https://open.toronto.ca/dataset/neighbourhood-profiles/" },
     { label: "City of Toronto — Cool spaces near you (Heat Relief Network)", url: "https://www.toronto.ca/community-people/health-wellness-care/health-programs-advice/hot-weather/cool-spaces-near-you" },
     { label: "U of T / Esri — Cooling locations for the senior population in Toronto", url: "https://ecce.esri.ca/blog/uoft-blog/2020/10/22/cooling-locations-for-the-senior-population-in-toronto/" },
-    { label: "City of Toronto — Neighbourhood Profiles (2021 Census)", url: "https://www.toronto.ca/city-government/data-research-maps/neighbourhoods-communities/neighbourhood-profiles/" },
-    { label: "City of Toronto Open Data portal", url: "https://open.toronto.ca/" },
+        { label: "City of Toronto Open Data portal", url: "https://open.toronto.ca/" },
   ],
 };

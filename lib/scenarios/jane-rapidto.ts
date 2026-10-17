@@ -101,6 +101,7 @@ export const janeRapidTO: Scenario = {
   ],
   heroMetric: "co2_saved_t",
   assumptions: [
+    "Household weights come from 2021 Census counts: neighbourhood households × the share matching each resident's tenure, household size and age group (shares treated as independent, so weights are approximate).",
     "Peak time changes use the City's published segment estimates for the recommended design (~8–9 min faster for buses, ~6–7 min slower for cars, end to end). Each household gets the share matching how much of their trip is on Jane.",
     "Drivers switch to transit when the bus becomes ≥10% cheaper in time-plus-money cost and transit is reasonably usable from home. Value of time scales with household income; fares count at 60% of face value because riders respond less to price than to time.",
     "Removing five local stops adds ~2 min of walking for riders who used them.",
@@ -110,12 +111,13 @@ export const janeRapidTO: Scenario = {
   limitations: [
     "12 composite households can't capture every rider. Treat results as directional, not a forecast.",
     "Does not model induced demand, re-routing onto parallel streets, or reliability (bunching) gains, which are often the biggest real benefit.",
-    "Household weights and neighbourhood indicators are illustrative until replaced with Census data.",
+    "Composite households weighted with 2021 Census data. Results are directional, not a forecast.",
+    "2021 Census was taken in May 2021, during COVID, so transit commuting shares are lower than usual.",
   ],
   sources: [
+    { label: "City of Toronto Open Data — Neighbourhood Profiles, 2021 Census (158-neighbourhood model)", url: "https://open.toronto.ca/dataset/neighbourhood-profiles/" },
     { label: "City of Toronto — RapidTO: Jane Street (design, segment time estimates)", url: "https://www.toronto.ca/services-payments/streets-parking-transportation/transportation-projects/rapidto/rapidto-jane-street/" },
     { label: "UrbanToronto — RapidTO delays (status, July 2025)", url: "https://urbantoronto.ca/news/2025/07/not-so-rapidto-transit-priority-moves-back.58923" },
     { label: "City of Toronto Open Data portal", url: "https://open.toronto.ca/" },
-    { label: "City of Toronto — Neighbourhood Profiles (2021 Census)", url: "https://www.toronto.ca/city-government/data-research-maps/neighbourhoods-communities/neighbourhood-profiles/" },
-  ],
+      ],
 };
