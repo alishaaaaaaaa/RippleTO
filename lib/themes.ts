@@ -35,7 +35,7 @@ export const THEMES: Record<ScenarioKind | "flood", Theme> = {
     deep: "#A77A06",
     soft: "#fbe7a1",
     scale: { good: "#F6C945", neutral: NEUTRAL, warn: WARN, bad: BAD },
-    glass: ["#dfe6f0", "#eff3f8", "#ffffff"],
+    glass: ["#bfd2ec", "#dce8f7", "#f8fbff"],
     streets: "#F6C945",
   },
   housing: {
@@ -45,7 +45,7 @@ export const THEMES: Record<ScenarioKind | "flood", Theme> = {
     deep: "#3F8F48",
     soft: "#c4e6c7",
     scale: { good: "#83C78A", neutral: "#d8b847", warn: WARN, bad: BAD },
-    glass: ["#dde8e2", "#eef4f0", "#ffffff"],
+    glass: ["#bfd8cf", "#dcebe4", "#f8fcfa"],
     streets: "#83C78A",
   },
   heat: {
@@ -55,7 +55,7 @@ export const THEMES: Record<ScenarioKind | "flood", Theme> = {
     deep: "#1588AE",
     soft: "#a9e6f6",
     scale: { good: "#38BFE5", neutral: "#f2b92a", warn: WARN, bad: BAD },
-    glass: ["#d9e7f1", "#ecf4fa", "#ffffff"],
+    glass: ["#b8d6ea", "#d8eaf6", "#f6fbff"],
     streets: "#38BFE5",
   },
   flood: {
@@ -65,7 +65,7 @@ export const THEMES: Record<ScenarioKind | "flood", Theme> = {
     deep: "#2B74C2",
     soft: "#b3d6f7",
     scale: { good: "#439DEB", neutral: NEUTRAL, warn: WARN, bad: BAD },
-    glass: ["#d9e3f2", "#ebf2fb", "#ffffff"],
+    glass: ["#bacfee", "#d8e5f8", "#f6f9ff"],
     streets: "#439DEB",
   },
 };
