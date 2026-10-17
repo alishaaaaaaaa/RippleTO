@@ -32,7 +32,7 @@ interface RippleState {
   selectedPersonaId: string | null;
   interviewPersonaId: string | null;
   soundOn: boolean;
-  mapMode: "3d" | "2d";
+  mapMode: "photo" | "3d" | "2d";
 
   loadScenario: (idOrScenario: string | Scenario) => void;
   addCustomScenario: (s: Scenario) => void;
@@ -50,7 +50,7 @@ interface RippleState {
   openInterview: (id: string | null) => void;
   setAiEnabled: (v: boolean) => void;
   toggleSound: () => void;
-  setMapMode: (m: "3d" | "2d") => void;
+  setMapMode: (m: "photo" | "3d" | "2d") => void;
   showToast: (text: string) => void;
   runAgents: () => Promise<void>;
 }
@@ -79,7 +79,7 @@ export const useRipple = create<RippleState>()(
       selectedPersonaId: null,
       interviewPersonaId: null,
       soundOn: true,
-      mapMode: "3d",
+      mapMode: "photo",
 
       loadScenario: (idOrScenario) => {
         const s =
