@@ -70,7 +70,7 @@ export const heatWave: Scenario = {
     label: s.name,
     description: `${s.type}${s.openNight ? " · open overnight" : " · daytime only"}${s.policyOnly ? " · opened by the response plan" : ""}`,
     coords: [s.location],
-    color: s.policyOnly ? "#06b6d4" : "#38bdf8",
+    color: s.policyOnly ? "#a9e6f6" : "#38BFE5",
     arm: s.policyOnly ? ("policy" as const) : ("both" as const),
   })),
   events: [

@@ -27,7 +27,7 @@ export const janeRapidTO: Scenario = {
       label: "Bus lanes: Steeles → Wilson",
       description: "One general lane each way converted to a red bus lane.",
       coords: [STEELES, FINCH, SHEPPARD, WILSON],
-      color: "#e11d48",
+      color: "#F6C945",
       arm: "policy",
     },
     {
@@ -45,7 +45,7 @@ export const janeRapidTO: Scenario = {
       label: "Bus lanes: Maple Leaf → Eglinton",
       description: "One general lane each way converted to a red bus lane.",
       coords: [MAPLE_LEAF, LAWRENCE, EGLINTON],
-      color: "#e11d48",
+      color: "#F6C945",
       arm: "policy",
     },
     {

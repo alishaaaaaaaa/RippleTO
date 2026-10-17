@@ -32,6 +32,7 @@ interface RippleState {
   selectedPersonaId: string | null;
   interviewPersonaId: string | null;
   soundOn: boolean;
+  mapMode: "3d" | "2d";
 
   loadScenario: (idOrScenario: string | Scenario) => void;
   addCustomScenario: (s: Scenario) => void;
@@ -49,6 +50,7 @@ interface RippleState {
   openInterview: (id: string | null) => void;
   setAiEnabled: (v: boolean) => void;
   toggleSound: () => void;
+  setMapMode: (m: "3d" | "2d") => void;
   showToast: (text: string) => void;
   runAgents: () => Promise<void>;
 }
@@ -77,6 +79,7 @@ export const useRipple = create<RippleState>()(
       selectedPersonaId: null,
       interviewPersonaId: null,
       soundOn: true,
+      mapMode: "3d",
 
       loadScenario: (idOrScenario) => {
         const s =
@@ -152,6 +155,7 @@ export const useRipple = create<RippleState>()(
       openInterview: (id) => set({ interviewPersonaId: id, playing: false }),
       setAiEnabled: (v) => set({ aiEnabled: v }),
       toggleSound: () => set({ soundOn: !get().soundOn }),
+      setMapMode: (m) => set({ mapMode: m }),
       showToast: (text) => set({ toast: { text, at: Date.now() } }),
 
       /** Fire one request per persona in parallel; cards fill in as each agent returns. */
@@ -192,7 +196,7 @@ export const useRipple = create<RippleState>()(
           return { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => void mem.set(k, v), removeItem: (k) => void mem.delete(k) };
         }
       }),
-      partialize: (s) => ({ customScenarios: s.customScenarios, narratives: s.narratives, soundOn: s.soundOn }),
+      partialize: (s) => ({ customScenarios: s.customScenarios, narratives: s.narratives, soundOn: s.soundOn, mapMode: s.mapMode }),
     },
   ),
 );

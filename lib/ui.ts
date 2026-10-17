@@ -1,3 +1,4 @@
+import { themeFor } from "@/lib/themes";
 import type { HeatRisk, Impact, PersonaState, Scenario, Sentiment, Severity } from "@/lib/types";
 
 export const IMPACT_COLOR: Record<Impact, string> = {
@@ -31,33 +32,44 @@ export const SENTIMENT_EMOJI: Record<Sentiment, string> = {
   distressed: "😣",
 };
 
-/** What colour a persona's pin/card should be, given the scenario and what we're viewing. */
+/**
+ * What colour a resident's marker/card should be. Uses the scenario's theme:
+ * "good" outcomes glow in the scenario colour, bad ones in warm red, so the
+ * scenario colour itself reads as "this policy is working here".
+ */
 export function stateColor(s: Scenario, st: PersonaState): string {
-  if (s.kind === "heat" && st.heatRisk) return RISK_COLOR[st.heatRisk];
+  const k = themeFor(s.kind).scale;
+  if (s.kind === "heat" && st.heatRisk) return { low: k.good, moderate: k.neutral, high: k.warn, critical: k.bad }[st.heatRisk];
   if (s.kind === "housing") {
-    if (st.movedOut) return "#ef3b56";
+    if (st.movedOut) return k.bad;
     const b = st.burdenPct ?? 0;
-    if (b >= 55) return "#f97316";
-    if (b >= 45) return "#facc15";
-    return "#22c55e";
+    if (b >= 55) return k.warn;
+    if (b >= 45) return k.neutral;
+    return k.good;
   }
-  return IMPACT_COLOR[st.impact];
+  return st.impact === "better" ? k.good : st.impact === "worse" ? k.bad : k.neutral;
 }
 
 export function legendFor(s: Scenario): { color: string; label: string }[] {
+  const k = themeFor(s.kind).scale;
   if (s.kind === "heat")
-    return (["low", "moderate", "high", "critical"] as HeatRisk[]).map((r) => ({ color: RISK_COLOR[r], label: `${r} risk` }));
+    return [
+      { color: k.good, label: "low risk" },
+      { color: k.neutral, label: "moderate" },
+      { color: k.warn, label: "high" },
+      { color: k.bad, label: "critical" },
+    ];
   if (s.kind === "housing")
     return [
-      { color: "#22c55e", label: "< 45% of income" },
-      { color: "#facc15", label: "45–55%" },
-      { color: "#f97316", label: "> 55%" },
-      { color: "#ef3b56", label: "displaced" },
+      { color: k.good, label: "< 45% of income" },
+      { color: k.neutral, label: "45–55%" },
+      { color: k.warn, label: "> 55%" },
+      { color: k.bad, label: "displaced" },
     ];
   return [
-    { color: IMPACT_COLOR.better, label: "faster trip" },
-    { color: IMPACT_COLOR.same, label: "no change" },
-    { color: IMPACT_COLOR.worse, label: "slower trip" },
+    { color: k.good, label: "faster trip" },
+    { color: k.neutral, label: "no change" },
+    { color: k.bad, label: "slower trip" },
   ];
 }
 
