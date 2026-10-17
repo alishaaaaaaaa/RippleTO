@@ -61,8 +61,8 @@ export function Header() {
       </div>
 
       <div className="ml-auto flex items-center gap-2 text-xs">
-        <span className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-amber-300" title="Neighbourhood numbers are placeholders until replaced with Census data — see docs/DATA.md">
-          Illustrative data
+        <span className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-amber-300" title="Neighbourhood data from the 2021 Census (City of Toronto Neighbourhood Profiles). Library sites from Toronto Public Library open data.">
+          2021 Census data
         </span>
         <span
           className={cx(
