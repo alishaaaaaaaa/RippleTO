@@ -4,7 +4,6 @@
 
 Ripple is a civic scenario simulator. Pick a real Toronto decision, press the big red button to enact it, and watch 12 AI residents live through it on a map, month by month. You can see who comes out ahead, who pays, and who gets missed, then **call any resident** to ask why, and generate a **neutral ward briefing** for residents, journalists or councillors.
 
-Built for Hack the Valley. Architecture inspired by [Emergent](https://github.com/myr124/emergent) (persona agents, timeline, map, interviews, after-action report), rebuilt for Toronto civic questions.
 
 | Scenario | Question | Tracks |
 |---|---|---|
