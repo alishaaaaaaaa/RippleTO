@@ -11,6 +11,49 @@ import { useRipple } from "@/lib/store";
 import { PERSONAS } from "@/lib/data/personas";
 import { openCoolingSites } from "@/lib/engine/model";
 import { legendFor, stateColor } from "@/lib/ui";
+import { rippleGeo, ringsAt, waveActive } from "@/lib/ripple";
+import { themeFor } from "@/lib/themes";
+
+/** Rings travelling out from the policy (drawn imperatively — they change every frame). */
+function RippleWaves({ scenario }: { scenario: Scenario }) {
+  const map = useMap();
+  const view = useRipple((s) => s.view);
+  const enacted = useRipple((s) => s.enacted);
+  const flashAt = useRipple((s) => s.flashAt);
+  useEffect(() => {
+    const geo = rippleGeo(scenario);
+    const t = themeFor(scenario.kind);
+    const ambient = view === "policy" && enacted;
+    const layer = L.layerGroup().addTo(map);
+    let raf = 0;
+    let last = 0;
+    const tick = (ts: number) => {
+      const now = Date.now();
+      if (ts - last > 33) {
+        last = ts;
+        layer.clearLayers();
+        for (const r of ringsAt(now, geo, flashAt, ambient)) {
+          L.circle([r.center.lat, r.center.lng], {
+            radius: r.r,
+            color: r.front ? t.accent : t.deep,
+            weight: r.front ? 4 : 2,
+            opacity: r.a,
+            fill: false,
+            interactive: false,
+          }).addTo(layer);
+        }
+      }
+      if (ambient || waveActive(now, flashAt)) raf = requestAnimationFrame(tick);
+      else layer.clearLayers();
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      layer.remove();
+    };
+  }, [map, scenario, view, enacted, flashAt]);
+  return null;
+}
 
 function FlyToScenario({ scenario }: { scenario: Scenario }) {
   const map = useMap();
@@ -49,12 +92,14 @@ function useTween(target: LatLng, ms = 700): LatLng {
 function PersonaPin({
   scenario,
   st,
+  id,
   name,
   selected,
   onClick,
 }: {
   scenario: Scenario;
   st: PersonaState;
+  id: string;
   name: string;
   selected: boolean;
   onClick: () => void;
@@ -66,11 +111,11 @@ function PersonaPin({
     () =>
       L.divIcon({
         className: "",
-        html: `<div class="persona-pin ${selected ? "selected" : ""} ${pulse ? "pulse" : ""}" style="background:${color}">${name[0]}</div>`,
+        html: `<div data-pid="${id}" class="persona-pin ${selected ? "selected" : ""} ${pulse ? "pulse" : ""}" style="background:${color}">${name[0]}</div>`,
         iconSize: [30, 30],
         iconAnchor: [15, 15],
       }),
-    [color, name, selected, pulse],
+    [color, id, name, selected, pulse],
   );
   return (
     <Marker position={[pos.lat, pos.lng]} icon={icon} eventHandlers={{ click: onClick }} zIndexOffset={selected ? 2000 : 1000}>
@@ -103,6 +148,7 @@ export default function SimMap() {
         attributionControl
       >
         <FlyToScenario scenario={scenario} />
+        <RippleWaves scenario={scenario} />
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
           attribution='Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
@@ -195,6 +241,7 @@ export default function SimMap() {
             key={p.id}
             scenario={scenario}
             st={row[i]}
+            id={p.id}
             name={p.name}
             selected={selected === p.id}
             onClick={() => selectPersona(selected === p.id ? null : p.id)}
@@ -204,7 +251,7 @@ export default function SimMap() {
 
       {/* Legend */}
       <div className="pointer-events-none absolute bottom-3 left-3 z-[500] rounded-lg border border-line bg-panel/90 px-3 py-2 text-[11px] backdrop-blur">
-        <div className="mb-1 font-semibold uppercase tracking-wider text-muted">Residents</div>
+        <div className="mb-1 font-bold text-muted">Residents</div>
         <div className="flex flex-wrap gap-x-3 gap-y-1">
           {legendFor(scenario).map((l) => (
             <span key={l.label} className="flex items-center gap-1.5">

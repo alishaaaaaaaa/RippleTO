@@ -2,12 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useRipple } from "@/lib/store";
+import { rippleGeo, scheduleHits } from "@/lib/ripple";
+import { RippleMark } from "./RippleMark";
 
-/** Full-screen red flash + banner when the policy is enacted, and transient toasts. */
+/**
+ * When the policy is enacted: a short banner, and the wave of "hits" that lights up
+ * each resident (map pin + list avatar) as the ripple reaches their home.
+ * Also shows transient toasts.
+ */
 export function Overlays() {
   const flashAt = useRipple((s) => s.flashAt);
   const toast = useRipple((s) => s.toast);
-  const policyName = useRipple((s) => s.scenario.policy.name);
+  const scenario = useRipple((s) => s.scenario);
   const [showToast, setShowToast] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
 
@@ -19,20 +25,27 @@ export function Overlays() {
   }, [toast]);
 
   useEffect(() => {
-    if (!flashAt) return;
+    if (!flashAt || Date.now() - flashAt > 1000) return; // ignore a stale timestamp restored on page load
     setShowBanner(true);
-    const t = setTimeout(() => setShowBanner(false), 1800);
-    return () => clearTimeout(t);
+    const cancelHits = scheduleHits(rippleGeo(scenario));
+    const t = setTimeout(() => setShowBanner(false), 2600);
+    return () => {
+      clearTimeout(t);
+      cancelHits();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flashAt]);
 
   return (
     <>
-      {flashAt > 0 && <div key={flashAt} className="enact-flash pointer-events-none fixed inset-0 z-[1500] bg-danger" />}
       {showBanner && (
-        <div className="pointer-events-none fixed inset-x-0 top-24 z-[1600] flex justify-center">
-          <div className="rounded-2xl border-2 border-danger bg-ink/90 px-8 py-4 text-center shadow-2xl">
-            <div className="text-xs font-black tracking-[0.3em] text-danger">POLICY ENACTED</div>
-            <div className="mt-1 text-2xl font-extrabold">{policyName}</div>
+        <div className="pointer-events-none fixed inset-x-0 top-[136px] z-[1600] flex justify-center">
+          <div className="flex items-center gap-4 rounded-2xl bg-panel/95 py-3 pl-4 pr-6 shadow-2xl ring-1 ring-line backdrop-blur">
+            <RippleMark size={44} animated />
+            <div>
+              <div className="text-sm text-muted">Policy enacted. Watch who it reaches.</div>
+              <div className="font-display text-2xl font-bold tracking-tight text-navy">{scenario.policy.name}</div>
+            </div>
           </div>
         </div>
       )}

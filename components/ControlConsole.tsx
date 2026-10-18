@@ -14,6 +14,7 @@ export function ControlConsole() {
   const view = useRipple((s) => s.view);
   const enacted = useRipple((s) => s.enacted);
   const armed = useRipple((s) => s.armed);
+  const flashAt = useRipple((s) => s.flashAt);
   const { setPeriod, togglePlay, prev, next, setView, toggleArmed, enact, setPlaying, resetToStatusQuo } = useRipple.getState();
   const N = scenario.periodLabels.length;
 
@@ -35,7 +36,7 @@ export function ControlConsole() {
           <button onClick={next} className="rounded-md border border-line px-2 py-1 text-sm hover:bg-panel-2" aria-label="Next period">
             ▶
           </button>
-          <div className="ml-2 whitespace-nowrap font-mono text-lg font-bold">{scenario.periodLabels[period - 1]}</div>
+          <div className="ml-2 whitespace-nowrap font-display text-xl font-bold">{scenario.periodLabels[period - 1]}</div>
           <div className="ml-auto inline-flex overflow-hidden rounded-lg border border-line text-xs font-semibold">
             <button
               onClick={() => setView("baseline")}
@@ -86,7 +87,8 @@ export function ControlConsole() {
           {armed ? "ARMED" : "SAFE"}
           <span className="mt-0.5 font-mono text-[9px] font-normal tracking-normal">A / D</span>
         </button>
-        <div className="flex flex-col items-center gap-1">
+        <div className="relative flex flex-col items-center gap-1">
+          {flashAt > 0 && Date.now() - flashAt < 2000 && <span key={flashAt} className="press-rings" />}
           <button
             onClick={enact}
             className={cx(

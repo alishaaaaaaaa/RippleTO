@@ -8,6 +8,7 @@ import { SCENARIOS } from "@/lib/scenarios";
 import { cx } from "@/lib/ui";
 import { SourcesDialog } from "./SourcesDialog";
 import { PanelButton } from "./PanelButton";
+import { RippleMark, Wordmark } from "./RippleMark";
 
 const SHORTCUTS: [string, string][] = [
   ["← / →", "Move through time"],
@@ -51,10 +52,8 @@ export function Header() {
   return (
     <header className="relative z-[1000] flex h-14 shrink-0 items-center gap-4 border-b border-line bg-panel/95 px-5 backdrop-blur">
       <Link href="/" className="flex items-center gap-2">
-        <span className="grid h-7 w-7 place-items-center rounded-lg bg-accent text-sm font-black text-navy">R</span>
-        <span className="text-base font-extrabold tracking-tight">
-          Ripple<span className="text-accent-deep">TO</span>
-        </span>
+        <RippleMark size={26} />
+        <Wordmark />
       </Link>
 
       <span className="h-5 w-px bg-line" />
@@ -128,7 +127,7 @@ export function Header() {
                 </div>
               </div>
               <div className="border-t border-line p-3">
-                <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">Panel / keyboard</div>
+                <div className="mb-1.5 text-xs font-bold text-muted">Panel and keyboard</div>
                 <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
                   {SHORTCUTS.map(([k, v]) => (
                     <div key={k} className="contents">

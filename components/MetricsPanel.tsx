@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { RippleMark } from "./RippleMark";
 import { useRipple } from "@/lib/store";
 import { formatDelta, formatMetric } from "@/lib/format";
 import { SEVERITY_COLOR, cx } from "@/lib/ui";
@@ -67,12 +68,12 @@ function MetricRow({ m, hero }: { m: MetricDef; hero?: boolean }) {
     return (
       <div className="rounded-2xl bg-panel p-4 shadow-sm ring-1 ring-line">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-accent" style={{ boxShadow: "0 0 8px var(--color-accent)" }} />
+          <RippleMark size={16} />
           <div className="text-xs font-medium text-muted" title={m.description}>
             {m.label}
           </div>
         </div>
-        <div className="mt-2 font-mono text-4xl font-bold tabular-nums tracking-tight">{formatMetric(animated, m.format)}</div>
+        <div className="mt-2 font-display text-5xl font-bold tracking-[-0.03em] text-navy">{formatMetric(animated, m.format)}</div>
         <div className="mt-1 h-5">
           {showCompare && Math.abs(delta) > 0.0001 && (
             <span className={cx("font-mono text-xs font-semibold", good ? "text-good" : "text-bad")}>{formatDelta(delta, m.format)} vs status quo</span>
@@ -124,7 +125,7 @@ export function MetricsPanel() {
           <div className="space-y-2 pt-1">
             {latest.map((e) => (
               <div key={`${e.period}-${e.title}`} className={cx("rounded-xl border-l-[3px] bg-panel px-3 py-2.5 ring-1 ring-line", e.period !== period && "opacity-60")} style={{ borderLeftColor: SEVERITY_COLOR[e.severity] }}>
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted">
+                <div className="text-[11px] font-bold text-muted">
                   {e.period === period ? "Now" : scenario.periodLabels[e.period - 1]}
                 </div>
                 <div className="mt-0.5 text-sm font-semibold leading-snug">{e.title}</div>

@@ -23,7 +23,8 @@ import { useRipple } from "@/lib/store";
 import { PERSONAS } from "@/lib/data/personas";
 import { legendFor, stateColor } from "@/lib/ui";
 import { themeFor } from "@/lib/themes";
-import { BEAM_LABEL, beamsData, fc, flowData, heatData, heroFor, linesData, sitesData, zonesData } from "@/lib/mapData";
+import { rippleGeo, ringsAt, waveActive } from "@/lib/ripple";
+import { BEAM_LABEL, beamsData, fc, flowData, heatData, heroFor, linesData, polygonAround, sitesData, zonesData } from "@/lib/mapData";
 import { OrbitControls, type CameraHandle } from "./OrbitControls";
 
 const STYLES = ["https://tiles.openfreemap.org/styles/positron", "https://tiles.openfreemap.org/styles/liberty"];
@@ -147,7 +148,7 @@ function setupLayers(map: MLMap) {
   const style = map.getStyle();
   const vectorSource = Object.entries(style.sources).find(([, s]) => s.type === "vector")?.[0];
   const empty = fc([]);
-  for (const id of ["ripple-heat", "ripple-zones", "ripple-lines", "ripple-flow", "ripple-sites", "ripple-sites-pt", "ripple-beams", "ripple-beams-pt"]) {
+  for (const id of ["ripple-heat", "ripple-zones", "ripple-lines", "ripple-flow", "ripple-sites", "ripple-sites-pt", "ripple-beams", "ripple-beams-pt", "ripple-waves"]) {
     if (!map.getSource(id)) map.addSource(id, { type: "geojson", data: empty });
   }
   if (map.getLayer("ripple-beams")) return;
@@ -233,6 +234,20 @@ function setupLayers(map: MLMap) {
     paint: { "line-color": ["get", "color"], "line-width": ["get", "w"], "line-opacity": 0.95, "line-dasharray": [0, 4, 3] },
   });
 
+  // The ripple itself: rings travelling out from where the policy happens.
+  map.addLayer({
+    id: "ripple-waves-glow",
+    type: "line",
+    source: "ripple-waves",
+    paint: { "line-color": ["get", "color"], "line-width": ["case", ["get", "front"], 14, 6], "line-blur": 8, "line-opacity": ["*", ["get", "a"], 0.45] },
+  });
+  map.addLayer({
+    id: "ripple-waves",
+    type: "line",
+    source: "ripple-waves",
+    paint: { "line-color": ["get", "line"], "line-width": ["case", ["get", "front"], 2.5, 1.5], "line-opacity": ["get", "a"] },
+  });
+
   map.addLayer({
     id: "ripple-sites-glow",
     type: "circle",
@@ -311,6 +326,7 @@ export default function SimMap3D({ onFail }: { onFail: () => void }) {
   const selected = useRipple((s) => s.selectedPersonaId);
   const flashAt = useRipple((s) => s.flashAt);
   const playing = useRipple((s) => s.playing);
+  const enacted = useRipple((s) => s.enacted);
   const theme = themeFor(scenario.kind);
 
   // ── Create the map once ─────────────────────────────────────────────────
@@ -391,6 +407,7 @@ export default function SimMap3D({ onFail }: { onFail: () => void }) {
     markers.current = PERSONAS.map((p) => {
       const el = document.createElement("div");
       el.className = "persona-pin";
+      el.dataset.pid = p.id;
       el.style.width = "18px";
       el.style.height = "18px";
       el.style.fontSize = "9px";
@@ -471,6 +488,37 @@ export default function SimMap3D({ onFail }: { onFail: () => void }) {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [ready, scenario, row, selected]);
+
+  // ── The ripple: animate rings while the enact wave travels, and softly while the policy is on
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const geo = rippleGeo(scenario);
+    const ambient = view === "policy" && enacted;
+    const src = () => map.getSource("ripple-waves") as GeoJSONSource | undefined;
+    let raf = 0;
+    let last = 0;
+    const tick = (ts: number) => {
+      const now = Date.now();
+      if (ts - last > 33) {
+        last = ts;
+        const rings = ringsAt(now, geo, flashAt, ambient);
+        src()?.setData(
+          fc(
+            rings.map((r) => ({
+              type: "Feature",
+              properties: { a: r.a, front: r.front, color: theme.accent, line: theme.deep },
+              geometry: { type: "LineString", coordinates: polygonAround(r.center, r.r, 96) },
+            })),
+          ),
+        );
+      }
+      if (ambient || waveActive(now, flashAt)) raf = requestAnimationFrame(tick);
+      else src()?.setData(fc([]));
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [ready, scenario, view, enacted, flashAt, theme]);
 
   // ── Camera choreography ─────────────────────────────────────────────────
   useEffect(() => {

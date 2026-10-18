@@ -21,6 +21,7 @@ import { PERSONAS } from "@/lib/data/personas";
 import { legendFor, stateColor } from "@/lib/ui";
 import { themeFor } from "@/lib/themes";
 import { BEAM_LABEL, beamHeight, heroFor, lighten, linesData, flowData, sitesData, zonesData } from "@/lib/mapData";
+import { hitPulse, rippleGeo, ringsAt, waveActive, type Ring } from "@/lib/ripple";
 import { OrbitControls, type CameraHandle } from "./OrbitControls";
 import type { Scenario } from "@/lib/types";
 
@@ -59,6 +60,7 @@ export default function SimMapPhoto({ onFail }: { onFail: (why: string) => void 
   const selected = useRipple((s) => s.selectedPersonaId);
   const flashAt = useRipple((s) => s.flashAt);
   const playing = useRipple((s) => s.playing);
+  const enacted = useRipple((s) => s.enacted);
   const theme = themeFor(scenario.kind);
 
   const [viewState, setViewState] = useState<MapViewState>(() => heroView(useRipple.getState().scenario));
@@ -138,6 +140,27 @@ export default function SimMapPhoto({ onFail }: { onFail: (why: string) => void 
     ease({ bearing: (vs.current.bearing ?? 0) + 4 }, 1500);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, playing]);
+
+  // ── The ripple clock: re-render ~30×/s only while rings are on screen
+  const geo = useMemo(() => rippleGeo(scenario), [scenario]);
+  const ambient = view === "policy" && enacted;
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    let last = 0;
+    const tick = (ts: number) => {
+      const t = Date.now();
+      if (ts - last > 33) {
+        last = ts;
+        setNow(t);
+      }
+      if (ambient || waveActive(t, flashAt)) raf = requestAnimationFrame(tick);
+      else setNow(0);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [ambient, flashAt]);
+  const rings: Ring[] = now ? ringsAt(now, geo, flashAt, ambient) : [];
 
   // ── Layers ─────────────────────────────────────────────────────────────
   const tiles = useMemo(
@@ -220,6 +243,20 @@ export default function SimMapPhoto({ onFail }: { onFail: (why: string) => void 
         lineWidthUnits: "pixels",
         updateTriggers: { getFillColor: [zoneAlpha, theme.accent] },
       }),
+      new ScatterplotLayer<Ring>({
+        id: "ripple-waves",
+        data: rings,
+        extensions: drape,
+        stroked: true,
+        filled: false,
+        radiusUnits: "meters",
+        lineWidthUnits: "pixels",
+        getPosition: (r) => [r.center.lng, r.center.lat],
+        getRadius: (r) => r.r,
+        getLineWidth: (r) => (r.front ? 4 : 2),
+        getLineColor: (r) => rgba(r.front ? theme.accent : theme.deep, Math.round(255 * r.a)),
+        updateTriggers: { getRadius: [now], getLineColor: [now, theme.accent] },
+      }),
       new GeoJsonLayer({
         id: "corridors",
         data: lines,
@@ -244,11 +281,11 @@ export default function SimMapPhoto({ onFail }: { onFail: (why: string) => void 
         data: people,
         extensions: drape,
         getPosition: (d: (typeof people)[number]) => [d.pos.lng, d.pos.lat],
-        getRadius: (d: (typeof people)[number]) => (d.id === selected ? 34 : 22),
+        getRadius: (d: (typeof people)[number]) => (d.id === selected ? 34 : 22) + 40 * hitPulse(now, flashAt, geo.delays[d.i]),
         getFillColor: (d: (typeof people)[number]) => rgba(stateColor(scenario, d.st), 150),
         radiusUnits: "meters",
         transitions: { getPosition: 700 },
-        updateTriggers: { getRadius: [selected], getFillColor: [row, scenario.id] },
+        updateTriggers: { getRadius: [selected, now], getFillColor: [row, scenario.id] },
       }),
       new ColumnLayer({
         id: "cooling-sites",
@@ -282,7 +319,7 @@ export default function SimMapPhoto({ onFail }: { onFail: (why: string) => void 
       }),
     ];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scenario, view, period, row, selected, theme]);
+  }, [scenario, view, period, row, selected, theme, now]);
 
   return (
     <div className="relative h-full w-full" style={{ background: "#dfe6ee" }}>

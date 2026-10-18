@@ -57,7 +57,7 @@ function Row({ p, i }: { p: Persona; i: number }) {
     >
       <div className="flex items-center gap-3">
         <div className="relative shrink-0">
-          <div className="grid h-8 w-8 place-items-center rounded-full text-xs font-bold text-navy" style={{ background: color }}>
+          <div data-pid={p.id} className="grid h-8 w-8 place-items-center rounded-full font-display text-xs font-bold text-navy" style={{ background: color }}>
             {p.name[0]}
           </div>
           {status === "thinking" && view === "policy" && !narrative && (
@@ -93,7 +93,7 @@ function Row({ p, i }: { p: Persona; i: number }) {
           </p>
           <KeyNumbers st={st} />
           <div>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-accent-deep">Why</div>
+            <div className="mb-1 text-xs font-bold text-accent-deep">Why</div>
             <ul className="list-disc space-y-0.5 pl-4 text-xs text-slate-600">
               {st.drivers.map((d) => (
                 <li key={d}>{d}</li>

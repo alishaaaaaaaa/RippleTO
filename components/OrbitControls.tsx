@@ -66,7 +66,7 @@ export function OrbitControls({ camera, paused }: { camera: React.RefObject<Came
   return (
     <div className="absolute right-4 top-4 z-[600] w-[184px] rounded-xl bg-panel/92 p-2.5 text-xs text-navy shadow-lg ring-1 ring-line backdrop-blur">
       <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">Camera</span>
+        <span className="font-display text-sm font-bold text-navy">Camera</span>
         <button onClick={() => setOpen(false)} className="rounded px-1 text-muted hover:bg-panel-2" aria-label="Hide camera controls">
           ✕
         </button>
