@@ -1,8 +1,9 @@
 "use client";
 
-// "Call a resident" — Emergent used an ElevenLabs voice agent; we use the
-// browser's free built-in speech (Web Speech API) so there's no extra API key.
-// Speech recognition works in Chrome/Edge; typing always works.
+// "Call a resident". Gemini writes each answer (/api/interview); ElevenLabs gives
+// every resident their own voice (/api/voice). If ElevenLabs isn't set up or fails,
+// the browser's built-in speech reads the answer instead, so the call always works.
+// Speech recognition (talking to them) works in Chrome/Edge; typing always works.
 
 import { useEffect, useRef, useState } from "react";
 import { useRipple } from "@/lib/store";
@@ -23,7 +24,7 @@ type SpeechRec = {
   stop: () => void;
 };
 
-function speak(text: string, persona?: { age: number }) {
+function browserSpeak(text: string, persona?: { age: number }) {
   try {
     if (!("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
@@ -36,12 +37,79 @@ function speak(text: string, persona?: { age: number }) {
   }
 }
 
-export function InterviewDialog() {
-  const personaId = useRipple((s) => s.interviewPersonaId);
-  const close = () => {
+/** Plays answers in the resident's ElevenLabs voice, falling back to the browser voice. */
+function useVoice() {
+  const audio = useRef<HTMLAudioElement | null>(null);
+  // Same words → same audio: replaying an answer doesn't spend ElevenLabs credits again.
+  const cache = useRef(new Map<string, string>());
+  const elevenOff = useRef(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [engine, setEngine] = useState<"elevenlabs" | "browser" | null>(null);
+
+  const stop = () => {
+    audio.current?.pause();
+    audio.current = null;
+    setSpeaking(false);
     try {
       window.speechSynthesis?.cancel();
     } catch {}
+  };
+
+  const speak = async (text: string, persona: { id: string; age: number }) => {
+    stop();
+    const key = `${persona.id}::${text}`;
+    let url = cache.current.get(key);
+    if (!url && !elevenOff.current) {
+      try {
+        const r = await fetch("/api/voice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ personaId: persona.id, text }),
+        });
+        if (r.ok) {
+          url = URL.createObjectURL(await r.blob());
+          cache.current.set(key, url);
+        } else if (r.status === 503) {
+          elevenOff.current = true; // not configured / out of credits: stop asking this session
+        }
+      } catch {
+        /* network hiccup: fall through to browser voice */
+      }
+    }
+    if (url) {
+      const a = new Audio(url);
+      audio.current = a;
+      a.onended = () => setSpeaking(false);
+      a.onerror = () => setSpeaking(false);
+      setEngine("elevenlabs");
+      setSpeaking(true);
+      try {
+        await a.play();
+        return;
+      } catch {
+        setSpeaking(false); // autoplay blocked etc. → browser voice
+      }
+    }
+    setEngine("browser");
+    browserSpeak(text, persona);
+  };
+
+  useEffect(() => {
+    const c = cache.current;
+    return () => {
+      audio.current?.pause();
+      c.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, []);
+
+  return { speak, stop, speaking, engine };
+}
+
+export function InterviewDialog() {
+  const personaId = useRipple((s) => s.interviewPersonaId);
+  const voice = useVoice();
+  const close = () => {
+    voice.stop();
     useRipple.getState().openInterview(null);
   };
   const scenario = useRipple((s) => s.scenario);
@@ -60,6 +128,8 @@ export function InterviewDialog() {
   useEffect(() => {
     setHistory([]);
     setInput("");
+    voice.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [personaId]);
 
   useEffect(() => {
@@ -81,7 +151,7 @@ export function InterviewDialog() {
       const d = await res.json();
       const reply = d.reply ?? "Sorry, the line cut out.";
       setHistory([...next, { role: "persona", text: reply }]);
-      if (voiceOn) speak(reply, persona);
+      if (voiceOn) void voice.speak(reply, persona);
     } catch {
       setHistory([...next, { role: "persona", text: "Sorry, the line cut out — can you ask again?" }]);
     } finally {
@@ -145,7 +215,7 @@ export function InterviewDialog() {
               >
                 {m.text}
                 {m.role === "persona" && (
-                  <button onClick={() => speak(m.text, persona)} className="ml-2 text-xs text-muted hover:text-text" aria-label="Play">
+                  <button onClick={() => void voice.speak(m.text, persona)} className="ml-2 text-xs text-muted hover:text-text" aria-label="Play">
                     🔈
                   </button>
                 )}
@@ -153,10 +223,22 @@ export function InterviewDialog() {
             </div>
           ))}
           {loading && <div className="thinking text-sm italic text-muted">{persona.name} is answering…</div>}
+          {voice.speaking && !loading && (
+            <div className="flex items-center gap-2 text-xs text-muted">
+              <span className="thinking inline-block h-2 w-2 rounded-full bg-accent-deep" />
+              {persona.name} is speaking
+              <button onClick={voice.stop} className="underline hover:text-text">
+                Stop
+              </button>
+            </div>
+          )}
           <div ref={endRef} />
         </div>
 
         <div className="mt-3 flex flex-wrap gap-1.5">
+          {voice.engine === "elevenlabs" && (
+            <span className="mr-auto self-center text-[11px] text-muted">Words by Gemini, voice by ElevenLabs</span>
+          )}
           {SUGGESTIONS.map((s) => (
             <button key={s} onClick={() => ask(s)} className="rounded-full border border-line px-2.5 py-1 text-xs text-muted hover:bg-panel-2 hover:text-text">
               {s}
@@ -190,9 +272,12 @@ export function InterviewDialog() {
           </button>
           <button
             type="button"
-            onClick={() => setVoiceOn(!voiceOn)}
+            onClick={() => {
+              if (voiceOn) voice.stop();
+              setVoiceOn(!voiceOn);
+            }}
             className="rounded-lg border border-line px-3 text-sm hover:bg-panel-2"
-            title="Read answers aloud"
+            title={voice.engine === "elevenlabs" ? "Read answers aloud (ElevenLabs voice)" : "Read answers aloud"}
           >
             {voiceOn ? "🔊" : "🔇"}
           </button>
