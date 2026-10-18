@@ -24,12 +24,13 @@ npm run dev
 
 - **No API key? It still works.** Every AI feature has a template fallback, so the demo can't break if the Wi-Fi or the API does. The header shows `● AI agents live` or `○ AI offline (templates)`.
 - Get a free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey). The default model is `gemini-2.5-flash`; change it with `GEMINI_MODEL`.
+- **Resident voices (optional):** add `ELEVENLABS_API_KEY` to give each of the 12 residents their own ElevenLabs voice on phone calls (casting is in `lib/voices.ts`). Gemini still writes every answer; ElevenLabs only speaks it. Without the key, the browser's built-in voice is used.
 - **Map views** (switch in the bottom-right corner of the map):
   - **Real 3D**: Google Photorealistic 3D Tiles, the actual 3D-scanned Toronto. Needs `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` with the *Map Tiles API* enabled; setup steps are in `.env.example`. It falls back to Model automatically if the key is missing or rejected.
   - **Model**: real OpenStreetMap building footprints and heights, painted in realistic materials. No key needed.
   - **2D**: a flat map.
   - The **Camera** panel (top right) rotates, tilts, zooms, auto-orbits and resets the view. You can also right-drag or Ctrl-drag the map.
-- **Deploy:** push to GitHub → import in [Vercel](https://vercel.com/new) → add `GEMINI_API_KEY` (and optionally `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`) as environment variables.
+- **Deploy:** push to GitHub → import in [Vercel](https://vercel.com/new) → add `GEMINI_API_KEY` (and optionally `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and `ELEVENLABS_API_KEY`) as environment variables.
 
 ## Controls (keyboard = hardware panel)
 
