@@ -77,19 +77,6 @@ npm run dev
 - **Housing.** Renters renew yearly. In redevelopment-pressure areas, rents jump at renewal; elsewhere they rise near the guideline. Housing **plus transport** cost is compared with income. Sustained spending over 65% forces a move: younger singles double up, others move further out and commute longer. The policy combines building protection (non-profit acquisition), enforcement and a targeted monthly benefit, and the engine reports **cost per household kept housed**.
 - **Heat.** Risk builds up across hot periods and depends on AC, age, living alone, chronic illness and floor height. Indoor heat lingers overnight. Each household can reach the nearest *open* cool space only within its walking range, car, or (under the policy) free transit or an outreach ride. Isolated seniors don't go unless someone contacts them.
 
-### Mapping to Emergent's architecture
-
-| Emergent | Ripple TO |
-|---|---|
-| `lib/types/ttx.ts` | `lib/types.ts` |
-| `lib/stores/ttxStoreV2.ts` (Zustand) | `lib/store.ts` |
-| ADK parallel persona agents | `/api/agent`, called 12× in parallel with `Promise.all` |
-| Injects / EOC actions | `events` (per arm) / the enacted policy |
-| `PeriodMapView.tsx` (React Leaflet) | `components/SimMap.tsx` |
-| `PhoneInterviewModal.tsx` (ElevenLabs) | `components/InterviewDialog.tsx` (free browser speech) |
-| Final report / AI summary | `/briefing` page + `/api/briefing` |
-| `adkTransformer.ts` | Not needed: the engine outputs the typed model directly |
-
 ### Project layout
 
 ```
