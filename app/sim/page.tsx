@@ -31,13 +31,13 @@ function ScenarioBanner() {
               <span
                 className={
                   view === "policy"
-                    ? "rounded bg-accent px-1.5 py-0.5 text-[10px] font-black tracking-wider text-navy"
-                    : "rounded bg-slate-300 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-navy"
+                    ? "rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-navy"
+                    : "rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-bold text-navy"
                 }
               >
-                {view === "policy" ? "WITH POLICY" : "STATUS QUO"}
+                {view === "policy" ? "With policy" : "Status quo"}
               </span>
-              <h1 className="truncate text-sm font-bold">{scenario.title}</h1>
+              <h1 className="truncate font-display text-[15px] font-bold tracking-tight">{scenario.title}</h1>
               {scenario.isCustom && <span className="rounded bg-info/20 px-1.5 text-[10px] font-bold text-info">CUSTOM</span>}
             </div>
             {open && (
