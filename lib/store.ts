@@ -137,7 +137,6 @@ export const useRipple = create<RippleState>()(
           return;
         }
         set({ enacted: true, view: "policy", period: 1, playing: true, flashAt: Date.now() });
-        get().showToast(`ENACTED: ${scenario.policy.name}`);
         void get().runAgents();
       },
 
